@@ -7,6 +7,8 @@ import {
   dataDir,
   getAgentsDir,
   getCacheDir,
+  getCacheMode,
+  getCacheSource,
   getGithubCacheFile,
   getLocalProjectsCacheFile,
   opencodeAgentsDir,
@@ -100,6 +102,9 @@ export const doctorCommand: CommandModule = {
 
     console.log(
       `${'info'.padEnd(8)} ${'provider'.padEnd(18)} ${config.provider}`,
+    );
+    console.log(
+      `${'info'.padEnd(8)} ${'cache mode'.padEnd(18)} ${getCacheMode()} (${getCacheSource()})`,
     );
     const proposal = loadProposalConfig();
     console.log(
