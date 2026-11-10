@@ -265,11 +265,11 @@ v0.1 implements:
 - `pull-private` for the secret PII gist
 - `clean` for the regenerable cache
 
-Next milestones:
+Next improvements:
 
-- further resume/publish workflows in the `json-resume` repo itself
-- trimming the old Node generation app out of `json-resume` once parity is
-  confirmed
+- richer project ranking and semantic matching
+- more answer/tailor prompt iterations
+- any site/publish workflow changes in the `json-resume` repo itself
 
-The old Node app in `json-resume` remains the reference implementation until
-the TypeScript version reaches parity.
+`json-resume` is now site-only: published JSON, render/build, validate, watch,
+and publish. Resume generation and career data live in dossier.
