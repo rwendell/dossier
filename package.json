@@ -1,0 +1,55 @@
+{
+  "name": "@rwendell/dossier",
+  "version": "0.1.0",
+  "description": "Grounded resume, application answer, and Upwork proposal generation from a local career dossier.",
+  "type": "module",
+  "bin": {
+    "dossier": "./dist/cli/index.js"
+  },
+  "files": [
+    "dist",
+    "agents",
+    "templates",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx src/cli/index.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json",
+    "prepack": "aube run build"
+  },
+  "keywords": [
+    "resume",
+    "json-resume",
+    "upwork",
+    "proposal",
+    "opencode"
+  ],
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "cheerio": "^1.2.0",
+    "clipboardy": "^5.3.2",
+    "env-paths": "^4.0.0",
+    "html-to-text": "^10.0.1",
+    "puppeteer": "^24.43.1",
+    "yaml": "^2.9.1",
+    "yargs": "^18.2.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/html-to-text": "^9.0.4",
+    "@types/node": "^26.6.6",
+    "@types/yargs": "^17.0.35",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0"
+  }
+}

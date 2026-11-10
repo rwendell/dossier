@@ -1,0 +1,63 @@
+# Dossier career fact bank.
+# Keep public, non-PII facts here. Put name/contact/location in
+# career.private.yml.
+
+version: 1
+basics:
+  profiles:
+    - network: GitHub
+      username: your-handle
+      url: https://github.com/your-handle
+
+summary: >-
+  One or two sentences describing the kind of work you do and the value you
+  bring. The proposal agent will use this as framing, not as evidence.
+
+generic:
+  title: Software Engineer
+  publishAs: software-engineer
+  description: >-
+    Build a general-purpose resume from the strongest evidence in this fact
+    bank. Prefer quantified outcomes and recent, relevant work.
+
+roles:
+  - id: example-company
+    company: Example Company
+    position: Software Engineer
+    startDate: 2022-01
+    endDate: 2025-01
+    summary: Built and maintained customer-facing systems.
+    achievements:
+      - id: example-delivery
+        text: Led delivery of a production feature from requirements through deployment and support.
+        skills: [delivery, api-design, testing]
+        strength: 5
+
+projects:
+  - id: example-project
+    name: Example Project
+    repo: your-handle/example-project
+    url: https://github.com/your-handle/example-project
+    description: A short description of the project.
+    highlights:
+      - id: example-project-highlight
+        text: Built a multi-user application with authentication and real-time data.
+        skills: [typescript, full-stack]
+
+education:
+  - id: example-school
+    institution: Example University
+    area: Computer Science
+    studyType: Bachelor of Science
+    startDate: 2014
+    endDate: 2018
+
+skills:
+  - name: TypeScript
+  - name: SQL
+
+constraints:
+  doNotClaim:
+    - People management unless explicitly listed
+
+transferable: []

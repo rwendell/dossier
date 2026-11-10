@@ -1,0 +1,10 @@
+# Private overlay for the career fact bank. This file is not published by the
+# site repo. Put PII here.
+basics:
+  name: Your Name
+  email: you@example.com
+  phone: (555) 555-5555
+  location:
+    city: Your City
+    region: Your State
+    countryCode: US
