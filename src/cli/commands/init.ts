@@ -43,6 +43,8 @@ export const initCommand: CommandModule<object, InitArgs> = {
     if (argv.from) {
       const source = resolve(process.cwd(), argv.from);
       migrate(source, Boolean(argv.force));
+      copyTemplate(`${templates}/career.yml`, careerFile, false);
+      copyTemplate(`${templates}/proposal.yml`, proposalFile, false);
     } else {
       copyTemplate(`${templates}/career.yml`, careerFile, Boolean(argv.force));
       copyTemplate(
