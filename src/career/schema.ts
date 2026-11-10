@@ -95,6 +95,7 @@ export const CareerSchema = z
     projects: z.array(ProjectSchema).default([]),
     education: z.array(EducationSchema).default([]),
     skills: z.array(z.unknown()).default([]),
+    skillExclude: z.array(z.string()).default([]),
     constraints: z.unknown().optional(),
     transferable: z.array(TransferableSchema).default([]),
     github: PassthroughObject.optional(),

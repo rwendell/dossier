@@ -35,11 +35,15 @@
     "access": "public"
   },
   "dependencies": {
+    "@jsonresume/schema": "1.7.0",
     "cheerio": "^1.2.0",
     "clipboardy": "^5.3.2",
     "env-paths": "^4.0.0",
     "html-to-text": "^10.0.1",
+    "jsonresume-theme-straightforward": "0.5.0",
+    "pdf-lib": "1.17.1",
     "puppeteer": "^24.43.1",
+    "resumed": "6.1.0",
     "yaml": "^2.9.1",
     "yargs": "^18.2.0",
     "zod": "^4.6.7"

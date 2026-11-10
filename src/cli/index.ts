@@ -6,6 +6,7 @@ import { initCommand } from './commands/init.js';
 import { pathsCommand } from './commands/paths.js';
 import { proposalCommand } from './commands/proposal.js';
 import { answerCommand } from './commands/answer.js';
+import { tailorCommand } from './commands/tailor.js';
 
 const cli = yargs(hideBin(process.argv))
   .scriptName('dossier')
@@ -18,6 +19,7 @@ const cli = yargs(hideBin(process.argv))
   .command(pathsCommand)
   .command(proposalCommand)
   .command(answerCommand)
+  .command(tailorCommand)
   .demandCommand(1, 'Choose a command.')
   .strict()
   .help()

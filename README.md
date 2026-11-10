@@ -83,6 +83,25 @@ This copies `data/career.yml`, `data/career.private.yml`, and `data/upwork.yml`
 to the XDG data directory, renaming `upwork.yml` to `proposal.yml`. Existing
 files are kept unless `--force` is passed.
 
+## Tailor a resume
+
+```bash
+dossier tailor 'https://www.upwork.com/jobs/...'
+dossier tailor job.md --out ~/Documents/resumes
+dossier tailor job.md --no-render   # JSON + trace only
+```
+
+The PDF is rendered with `resumed` and the configured theme. It is measured in
+print layout and automatically trimmed (highlights, projects, skills, summary)
+until it fits on one page, then filled from unused fact-bank achievements when
+it is too sparse. Outputs default to the current directory:
+
+```text
+./resume-<slug>.json
+./resume-<slug>.trace.json
+./resume-<slug>.pdf
+```
+
 ## Write a proposal
 
 ```bash
@@ -142,10 +161,11 @@ v0.1 implements:
   verification, clipboard copy, and CWD/`--out` output
 - `answer` for application and interview questions, with the same grounding and
   verification
+- `tailor` with JSON Resume output, `resumed` PDF rendering, one-page trimming,
+  sparse-page filling, and trace verification
 
 Next milestones:
 
-- `tailor` with one-page rendering via `resumed`
 - GitHub/local project sync and candidate ranking
 - `publish` into a `json-resume` checkout
 - `verify`, `score`, and `clean`

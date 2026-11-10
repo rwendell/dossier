@@ -571,7 +571,7 @@ function verifyClaimEvidenceUnion({
   }
 }
 
-function buildAllowedYears(career: Career): Set<string> {
+export function buildAllowedYears(career: Career): Set<string> {
   const years = new Set<string>();
   const add = (date: unknown) => {
     const match = String(date ?? '').match(/^(\d{4})/);
@@ -588,7 +588,7 @@ function buildAllowedYears(career: Career): Set<string> {
   return years;
 }
 
-function checkNumbers(
+export function checkNumbers(
   output: string,
   sourceText: string,
   path: string,
