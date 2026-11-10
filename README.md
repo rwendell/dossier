@@ -50,6 +50,15 @@ Requirements:
   dossier-proposer.md          # installed global agent prompt
 ```
 
+Cache location is mode-aware:
+
+- running from a source checkout: `<repo>/.cache`
+- running from an installed/published package: `~/.cache/dossier`
+- `DOSSIER_CACHE_HOME` overrides either
+- `DOSSIER_DEV=1` or `DOSSIER_DEV=0` forces dev or release mode
+
+`dossier paths` prints the resolved mode and cache path.
+
 Machine config:
 
 ```yaml

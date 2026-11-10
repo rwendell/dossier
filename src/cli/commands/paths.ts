@@ -6,6 +6,7 @@ import {
   configDir,
   configFile,
   dataDir,
+  isDev,
   profileCacheDir,
   proposalFile,
   resolveOutputDir,
@@ -36,6 +37,7 @@ export const pathsCommand: CommandModule<object, PathsArgs> = {
     const { config } = loadConfig();
     const output = resolveOutputDir(config.output.dir, argv.out);
     const paths = {
+      mode: isDev ? 'dev' : 'release',
       data: dataDir,
       config: configDir,
       configFile,

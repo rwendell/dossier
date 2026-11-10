@@ -1,9 +1,23 @@
-import { mkdirSync } from 'node:fs';
+import { existsSync, mkdirSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { isAbsolute, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import envPaths from 'env-paths';
 
 const defaults = envPaths('dossier', { suffix: '' });
+
+export const packageRoot = fileURLToPath(new URL('../../', import.meta.url));
+
+/**
+ * A source checkout (including `node dist/cli/index.js` inside the repo) uses
+ * the project-local .cache. A published/installed package has no .git or src/
+ * and uses the XDG cache. DOSSIER_DEV=1|0 forces either mode.
+ */
+export const isDev =
+  process.env.DOSSIER_DEV === '1' ||
+  (process.env.DOSSIER_DEV !== '0' &&
+    (existsSync(join(packageRoot, '.git')) ||
+      existsSync(join(packageRoot, 'src', 'cli', 'index.ts'))));
 
 export const dataDir = process.env.DOSSIER_DATA_HOME
   ? resolve(process.env.DOSSIER_DATA_HOME)
@@ -13,7 +27,9 @@ export const configDir = process.env.DOSSIER_CONFIG_HOME
   : defaults.config;
 export const cacheDir = process.env.DOSSIER_CACHE_HOME
   ? resolve(process.env.DOSSIER_CACHE_HOME)
-  : defaults.cache;
+  : isDev
+    ? join(packageRoot, '.cache')
+    : defaults.cache;
 export const stateDir = process.env.DOSSIER_STATE_HOME
   ? resolve(process.env.DOSSIER_STATE_HOME)
   : defaults.log;
