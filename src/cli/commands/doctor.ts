@@ -7,6 +7,8 @@ import {
   careerFile,
   configFile,
   dataDir,
+  githubCacheFile,
+  localProjectsCacheFile,
   opencodeAgentsDir,
   privateCareerFile,
   proposalFile,
@@ -43,6 +45,14 @@ export const doctorCommand: CommandModule = {
     );
     check('proposal.yml', existsSync(proposalFile), proposalFile, true);
     check('cache dir', existsSync(cacheDir), cacheDir, false);
+    const projectCache =
+      existsSync(githubCacheFile) || existsSync(localProjectsCacheFile);
+    check(
+      'project cache',
+      projectCache,
+      projectCache ? 'synced' : 'run `dossier sync github` or `sync local`',
+      false,
+    );
     const requiredAgents = [
       'dossier-proposer.md',
       'dossier-answerer.md',

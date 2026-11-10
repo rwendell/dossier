@@ -9,6 +9,8 @@ import { answerCommand } from './commands/answer.js';
 import { tailorCommand } from './commands/tailor.js';
 import { verifyCommand } from './commands/verify.js';
 import { cleanCommand } from './commands/clean.js';
+import { syncCommand } from './commands/sync.js';
+import { scoreCommand } from './commands/score.js';
 
 const cli = yargs(hideBin(process.argv))
   .scriptName('dossier')
@@ -24,6 +26,8 @@ const cli = yargs(hideBin(process.argv))
   .command(tailorCommand)
   .command(verifyCommand)
   .command(cleanCommand)
+  .command(syncCommand)
+  .command(scoreCommand)
   .demandCommand(1, 'Choose a command.')
   .strict()
   .help()

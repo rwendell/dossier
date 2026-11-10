@@ -43,6 +43,8 @@ Requirements:
 ~/.cache/dossier/
   opencode/.opencode/agents/   # runtime agent prompts
   upwork/profile-*.json        # cached public profile
+  github.json                  # synced GitHub/org repos
+  local-projects.json          # scanned ~/projects
 
 ~/.config/opencode/agents/
   dossier-proposer.md          # installed global agent prompt
@@ -103,6 +105,38 @@ it is too sparse. Outputs default to the current directory:
 ./resume-<slug>.trace.json
 ./resume-<slug>.pdf
 ```
+
+## Sync project metadata
+
+Project candidates come from GitHub/org repos and local `~/projects` checkouts.
+Sync them into the cache:
+
+```bash
+dossier sync github   # requires gh auth login
+dossier sync local    # scans ~/projects
+dossier sync all
+```
+
+`sync github` lists your personal repos and org repos you have contributed to,
+then rescans local projects unless `--skip-local` is passed. `sync local`
+records READMEs, manifests, languages, local commit subjects, and remote URLs.
+
+`dossier` and `json-resume` are excluded from local scanning by default so the
+tooling does not rank itself as a portfolio project. Add them to
+`local.include` in `career.yml` if you want them included.
+
+Candidate ranking is keyword overlap against the job description. Metadata
+matches (name, description, topics, languages, local commits) are weighted more
+than README matches, and only projects with at least one match are selected.
+Inspect the ranking without calling a model:
+
+```bash
+dossier score job.md
+dossier score job.md --limit 20
+```
+
+`proposal`, `answer`, and `tailor` automatically use cached candidates when
+present. Run a sync after adding repositories or changing READMEs.
 
 ## Write a proposal
 
@@ -177,13 +211,16 @@ v0.1 implements:
 - `tailor` with JSON Resume output, `resumed` PDF rendering, one-page trimming,
   sparse-page filling, and trace verification
 - `verify` for a generated JSON/trace/PDF
+- `sync github` / `sync local` project metadata
+- keyword candidate ranking used by proposal/answer/tailor
+- `score` to explain candidate ranking
 - `clean` for the regenerable cache
 
 Next milestones:
 
-- GitHub/local project sync and candidate ranking
-- `score`
 - further resume/publish workflows in the `json-resume` repo itself
+- trimming the old Node generation app out of `json-resume` once parity is
+  confirmed
 
 The old Node app in `json-resume` remains the reference implementation until
 the TypeScript version reaches parity.

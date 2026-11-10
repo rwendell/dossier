@@ -21,6 +21,10 @@ import {
 import { readJobInput } from '../job/input.js';
 import { ensureAgents, reloadOpencode } from '../llm/agents.js';
 import { LlmError, runAgent } from '../llm/providers.js';
+import {
+  hasProjectCache,
+  loadCandidates,
+} from '../projects/store.js';
 import { slugify } from '../util/slug.js';
 import {
   applyProfileToCareer,
@@ -113,6 +117,19 @@ export async function runAnswer(options: AnswerRunOptions): Promise<void> {
   const slug =
     slugify([job.company, job.title].filter(Boolean).join(' ')) ||
     'application';
+
+  const candidates = loadCandidates(career, job);
+  if (candidates.length === 0 && !hasProjectCache()) {
+    console.warn(
+      'dossier: no project metadata cached; run `dossier sync github` or `dossier sync local` to include repositories.',
+    );
+  }
+  if (profile) {
+    const mapped = mapProfilePortfolio(profile, career, candidates);
+    profile.portfolio = mapped.portfolio;
+    profile.preferredSamples = mapped.preferredSamples;
+  }
+
   const questionSlug = options.name
     ? slugify(options.name).slice(0, 70) || 'question'
     : answerSlug(question);
@@ -131,7 +148,7 @@ export async function runAnswer(options: AnswerRunOptions): Promise<void> {
     hint,
     client,
     profile,
-    candidates: [],
+    candidates,
   });
 
   console.log(
@@ -196,7 +213,7 @@ export async function runAnswer(options: AnswerRunOptions): Promise<void> {
   const verification = verifyAnswer({
     output,
     career,
-    candidates: [],
+    candidates,
     hint,
     client,
     profile,

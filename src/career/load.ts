@@ -9,8 +9,17 @@ export interface LoadedCareer {
   privatePath: string | null;
 }
 
-export function loadCareer(): LoadedCareer {
+export function loadCareer(
+  { optional = false }: { optional?: boolean } = {},
+): LoadedCareer {
   if (!existsSync(careerFile)) {
+    if (optional) {
+      return {
+        career: CareerSchema.parse({}),
+        publicPath: careerFile,
+        privatePath: null,
+      };
+    }
     throw new Error(
       `Missing ${careerFile}. Run \`dossier init\` or \`dossier init --from <old-repo>\` first.`,
     );

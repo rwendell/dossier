@@ -13,10 +13,13 @@ import {
   resolveOutputDir,
   runtimeDir,
 } from '../config/paths.js';
-import type { Candidate } from '../evidence/verify.js';
 import { readJobInput } from '../job/input.js';
 import { ensureAgents, reloadOpencode } from '../llm/agents.js';
 import { LlmError, runAgent } from '../llm/providers.js';
+import {
+  hasProjectCache,
+  loadCandidates,
+} from '../projects/store.js';
 import { slugify } from '../util/slug.js';
 import {
   applyProfileToCareer,
@@ -133,7 +136,12 @@ export async function runTailor(options: TailorRunOptions): Promise<void> {
   mkdirSync(workDir, { recursive: true });
   const htmlPath = resolve(workDir, 'measure.html');
 
-  const candidates: Candidate[] = [];
+  const candidates = loadCandidates(career, job);
+  if (candidates.length === 0 && !hasProjectCache()) {
+    console.warn(
+      'dossier: no project metadata cached; run `dossier sync github` or `dossier sync local` to include repositories.',
+    );
+  }
   const prompt = buildTailorPrompt({ career, job, slug, candidates });
 
   console.log(

@@ -27,6 +27,11 @@ export const configFile = join(configDir, 'config.yml');
 export const runtimeDir = join(cacheDir, 'opencode');
 export const agentsDir = join(runtimeDir, '.opencode', 'agents');
 export const profileCacheDir = join(cacheDir, 'upwork');
+export const githubCacheFile = join(cacheDir, 'github.json');
+export const localProjectsCacheFile = join(
+  cacheDir,
+  'local-projects.json',
+);
 
 const opencodeConfigBase = process.env.XDG_CONFIG_HOME
   ? resolve(process.env.XDG_CONFIG_HOME)

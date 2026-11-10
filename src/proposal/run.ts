@@ -15,6 +15,10 @@ import {
 import { readJobInput } from '../job/input.js';
 import { ensureAgents, reloadOpencode } from '../llm/agents.js';
 import { LlmError, runAgent } from '../llm/providers.js';
+import {
+  hasProjectCache,
+  loadCandidates,
+} from '../projects/store.js';
 import { slugify, truncate } from '../util/slug.js';
 import {
   applyProfileToCareer,
@@ -131,7 +135,14 @@ export async function runProposal(
     slugify([job.company, job.title].filter(Boolean).join(' ')) ||
     'upwork-job';
 
-  const mappedPortfolio = mapProfilePortfolio(profile, career, []);
+  const candidates = loadCandidates(career, job);
+  if (candidates.length === 0 && !hasProjectCache()) {
+    console.warn(
+      'dossier: no project metadata cached; run `dossier sync github` or `dossier sync local` to include repositories.',
+    );
+  }
+
+  const mappedPortfolio = mapProfilePortfolio(profile, career, candidates);
   if (profile) {
     profile.portfolio = mappedPortfolio.portfolio;
     profile.preferredSamples = mappedPortfolio.preferredSamples;
@@ -162,7 +173,7 @@ export async function runProposal(
     career,
     job,
     slug,
-    candidates: [],
+    candidates,
     profile,
     client,
     hint,
@@ -258,7 +269,7 @@ export async function runProposal(
   const verification = verifyProposal({
     output,
     career,
-    candidates: [],
+    candidates,
     hint,
     client,
     settings,
