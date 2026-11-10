@@ -2,7 +2,7 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { loadCareer } from '../career/load.js';
-import { githubCacheFile } from '../config/paths.js';
+import { getGithubCacheFile } from '../config/paths.js';
 import { syncLocal } from './sync-local.js';
 import type { GitHubData, GitHubRepo } from './types.js';
 
@@ -50,7 +50,7 @@ export function syncGithub(options: SyncGithubOptions = {}): GitHubData {
     );
   }
 
-  const outPath = resolve(options.out || githubCacheFile);
+  const outPath = resolve(options.out || getGithubCacheFile());
   const limit = options.limit ?? 100;
   const readmeChars = options.readmeChars ?? 5000;
   const excluded = new Set(

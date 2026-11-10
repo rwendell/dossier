@@ -1,4 +1,5 @@
 import type { CommandModule } from 'yargs';
+import { loadConfig } from '../../config/config.js';
 import { syncGithub } from '../../projects/sync-github.js';
 import { syncLocal } from '../../projects/sync-local.js';
 
@@ -55,6 +56,7 @@ export const syncCommand: CommandModule<object, SyncArgs> = {
         default: false,
       }),
   handler: (argv) => {
+    loadConfig();
     if (!argv.target) throw new Error('Choose github, local, or all.');
     if (argv.target === 'local') {
       syncLocal({

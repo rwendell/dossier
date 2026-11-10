@@ -5,8 +5,8 @@ import { loadCareer } from '../career/load.js';
 import { loadConfig } from '../config/config.js';
 import {
   displayPath,
+  getRuntimeDir,
   resolveOutputDir,
-  runtimeDir,
 } from '../config/paths.js';
 import {
   verifyProposal,
@@ -19,6 +19,7 @@ import {
   hasProjectCache,
   loadCandidates,
 } from '../projects/store.js';
+import { findTailoredResume } from '../resume/find.js';
 import { slugify, truncate } from '../util/slug.js';
 import {
   applyProfileToCareer,
@@ -169,6 +170,13 @@ export async function runProposal(
   const markdownPath = `${base}.md`;
   const jsonPath = `${base}.json`;
 
+  const tailored = findTailoredResume(slug, outDir);
+  if (tailored) {
+    console.log(
+      `dossier: using tailored resume ${displayPath(tailored.resumePath)}`,
+    );
+  }
+
   const prompt = buildProposalPrompt({
     career,
     job,
@@ -180,6 +188,8 @@ export async function runProposal(
     settings,
     questions,
     requiredOpening,
+    resume: tailored?.resume,
+    trace: tailored?.trace,
   });
 
   console.log(
@@ -221,7 +231,7 @@ export async function runProposal(
       agent: 'dossier-proposer',
       title: `Proposal: ${slug}`,
       timeout: options.timeout ?? 10 * 60 * 1000,
-      cwd: runtimeDir,
+      cwd: getRuntimeDir(),
       provider: options.provider,
       model: options.model,
       accept: (value) =>
@@ -364,6 +374,8 @@ export async function runProposal(
         sources: {
           proposal: proposalConfigPath,
           profile: profile?.cachePath ?? null,
+          resume: tailored?.resumePath ?? null,
+          trace: tailored?.tracePath ?? null,
         },
       },
       null,

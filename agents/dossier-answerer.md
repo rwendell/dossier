@@ -28,11 +28,12 @@ the narrow research and transferability rules below.
 
 These rules override style:
 
-- Use only facts present in `<career>`, `<project_candidates>`, `<resume>`,
-  `<upwork_profile>`, `<client_context>`, or `<hint>`. Never invent employers,
-  dates, metrics, technologies, certifications, or experiences.
-- If a `<resume>` is provided, keep the answer consistent with it and prefer its
-  framing.
+- Use only facts present in `<career>`, `<project_candidates>`,
+  `<tailored_resume>`, `<resume_trace>`, `<upwork_profile>`,
+  `<client_context>`, or `<hint>`. Never invent employers, dates, metrics,
+  technologies, certifications, or experiences.
+- If a `<tailored_resume>` is provided, keep the answer consistent with it and
+  prefer its framing.
 - Do not add a technology or accomplishment unless it is supported by the fact
   bank or the tailored resume.
 - Every factual claim must cite at least one evidence id in `claims`. Do not put

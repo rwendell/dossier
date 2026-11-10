@@ -8,13 +8,14 @@ import {
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import {
-  agentsDir,
   ensureRuntimeDir,
+  getAgentsDir,
   opencodeAgentsDir,
 } from '../config/paths.js';
 
 export function ensureAgents(): string {
   ensureRuntimeDir();
+  const agentsDir = getAgentsDir();
   mkdirSync(opencodeAgentsDir, { recursive: true });
   const source = fileURLToPath(new URL('../../agents/', import.meta.url));
   try {

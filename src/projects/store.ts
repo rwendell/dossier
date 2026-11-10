@@ -1,8 +1,8 @@
 import { existsSync, readFileSync } from 'node:fs';
 import type { Career } from '../career/schema.js';
 import {
-  githubCacheFile,
-  localProjectsCacheFile,
+  getGithubCacheFile,
+  getLocalProjectsCacheFile,
 } from '../config/paths.js';
 import type { Job } from '../job/types.js';
 import { selectProjects } from './rank.js';
@@ -13,11 +13,11 @@ import type {
 } from './types.js';
 
 export function loadGithub(): GitHubData | null {
-  return readJson<GitHubData>(githubCacheFile);
+  return readJson<GitHubData>(getGithubCacheFile());
 }
 
 export function loadLocal(): LocalProjectsData | null {
-  return readJson<LocalProjectsData>(localProjectsCacheFile);
+  return readJson<LocalProjectsData>(getLocalProjectsCacheFile());
 }
 
 export function loadCandidates(
@@ -32,7 +32,10 @@ export function loadCandidates(
 }
 
 export function hasProjectCache(): boolean {
-  return existsSync(githubCacheFile) || existsSync(localProjectsCacheFile);
+  return (
+    existsSync(getGithubCacheFile()) ||
+    existsSync(getLocalProjectsCacheFile())
+  );
 }
 
 function readJson<T>(path: string): T | null {

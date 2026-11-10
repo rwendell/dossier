@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { parse as parseYaml } from 'yaml';
 import { z } from 'zod';
-import { configFile } from './paths.js';
+import { configFile, setConfigCacheSelection } from './paths.js';
 
 export const ProviderSchema = z.enum([
   'auto',
@@ -17,6 +17,12 @@ export const ConfigSchema = z
         dir: z.string().default(''),
       })
       .default({ dir: '' }),
+    cache: z
+      .object({
+        mode: z.enum(['auto', 'dev', 'release']).default('auto'),
+        dir: z.string().default(''),
+      })
+      .default({ mode: 'auto', dir: '' }),
     theme: z.string().default('jsonresume-theme-straightforward'),
     provider: ProviderSchema.default('auto'),
     editor: z.string().default(''),
@@ -31,12 +37,15 @@ export interface LoadedConfig {
 
 export function loadConfig(): LoadedConfig {
   if (!existsSync(configFile)) {
-    return { config: withEnv(ConfigSchema.parse({})), path: null };
+    const config = withEnv(ConfigSchema.parse({}));
+    setConfigCacheSelection(config.cache);
+    return { config, path: null };
   }
 
   const raw = parseYaml(readFileSync(configFile, 'utf8')) ?? {};
-  const config = ConfigSchema.parse(raw);
-  return { config: withEnv(config), path: configFile };
+  const config = withEnv(ConfigSchema.parse(raw));
+  setConfigCacheSelection(config.cache);
+  return { config, path: configFile };
 }
 
 function withEnv(config: Config): Config {
@@ -57,6 +66,12 @@ export function formatConfig(config: Config): string {
 output:
   # Empty means the current working directory.
   dir: ""
+
+cache:
+  # auto | dev | release
+  mode: "${config.cache.mode}"
+  # Optional explicit cache directory; overrides mode.
+  dir: "${config.cache.dir}"
 
 theme: "${config.theme}"
 provider: "${config.provider}"

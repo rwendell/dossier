@@ -3,6 +3,12 @@ output:
   # Empty means the current working directory.
   dir: ""
 
+cache:
+  # auto | dev | release
+  mode: "auto"
+  # Optional explicit cache directory; overrides mode.
+  dir: ""
+
 theme: "jsonresume-theme-straightforward"
 provider: "auto"
 editor: ""

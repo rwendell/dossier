@@ -1,5 +1,6 @@
 import type { CommandModule } from 'yargs';
 import { loadCareer } from '../../career/load.js';
+import { loadConfig } from '../../config/config.js';
 import { readJobInput } from '../../job/input.js';
 import { rankProjects } from '../../projects/rank.js';
 import { loadGithub, loadLocal } from '../../projects/store.js';
@@ -38,6 +39,7 @@ export const scoreCommand: CommandModule<object, ScoreArgs> = {
         default: 12,
       }),
   handler: async (argv) => {
+    loadConfig();
     const { career } = loadCareer();
     const job = await readJobInput({
       input: argv.input,

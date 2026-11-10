@@ -1,11 +1,11 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, relative } from 'node:path';
 import * as cheerio from 'cheerio';
 import type { CheerioAPI } from 'cheerio';
 import type { Career } from '../career/schema.js';
 import {
-  cacheDir,
-  profileCacheDir,
+  getCacheDir,
+  getProfileCacheDir,
 } from '../config/paths.js';
 import { slugify } from '../util/slug.js';
 import { fetchRenderedHtml } from '../job/page.js';
@@ -94,6 +94,7 @@ export async function loadUpworkProfile(
     );
   }
 
+  const profileCacheDir = getProfileCacheDir();
   const cachePath = join(
     profileCacheDir,
     `profile-${profileIdFromUrl(url)}.json`,
@@ -106,7 +107,7 @@ export async function loadUpworkProfile(
     return {
       ...cached.profile,
       cached: true,
-      cachePath: cachePath.replace(`${cacheDir}/`, ''),
+      cachePath: relative(getCacheDir(), cachePath),
     };
   }
 
@@ -133,7 +134,7 @@ export async function loadUpworkProfile(
     return {
       ...profile,
       cached: false,
-      cachePath: cachePath.replace(`${cacheDir}/`, ''),
+      cachePath: relative(getCacheDir(), cachePath),
     };
   } catch (error) {
     if (cached) {
@@ -144,7 +145,7 @@ export async function loadUpworkProfile(
         ...cached.profile,
         cached: true,
         stale: true,
-        cachePath: cachePath.replace(`${cacheDir}/`, ''),
+        cachePath: relative(getCacheDir(), cachePath),
       };
     }
     throw error;

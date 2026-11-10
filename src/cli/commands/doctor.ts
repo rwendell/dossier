@@ -2,13 +2,13 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, readdirSync } from 'node:fs';
 import type { CommandModule } from 'yargs';
 import {
-  agentsDir,
-  cacheDir,
   careerFile,
   configFile,
   dataDir,
-  githubCacheFile,
-  localProjectsCacheFile,
+  getAgentsDir,
+  getCacheDir,
+  getGithubCacheFile,
+  getLocalProjectsCacheFile,
   opencodeAgentsDir,
   privateCareerFile,
   proposalFile,
@@ -20,6 +20,11 @@ export const doctorCommand: CommandModule = {
   command: 'doctor',
   describe: 'Check the local dossier setup and external tools',
   handler: async () => {
+    const { config } = loadConfig();
+    const cacheDir = getCacheDir();
+    const agentsDir = getAgentsDir();
+    const githubCacheFile = getGithubCacheFile();
+    const localProjectsCacheFile = getLocalProjectsCacheFile();
     let failures = 0;
     const check = (
       label: string,
@@ -93,7 +98,6 @@ export const doctorCommand: CommandModule = {
       check('chrome', false, (error as Error).message, false);
     }
 
-    const { config } = loadConfig();
     console.log(
       `${'info'.padEnd(8)} ${'provider'.padEnd(18)} ${config.provider}`,
     );

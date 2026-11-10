@@ -2,6 +2,7 @@ import { copyFileSync, existsSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
 import type { CommandModule } from 'yargs';
+import { loadConfig } from '../../config/config.js';
 import {
   careerFile,
   configFile,
@@ -34,7 +35,6 @@ export const initCommand: CommandModule<object, InitArgs> = {
       }),
   handler: (argv) => {
     ensureBaseDirs();
-    ensureAgents();
 
     const templates = fileURLToPath(
       new URL('../../../templates/', import.meta.url),
@@ -56,6 +56,8 @@ export const initCommand: CommandModule<object, InitArgs> = {
 
     copyTemplate(`${templates}/config.yml`, configFile, false);
     mkdirSync(configDir, { recursive: true });
+    loadConfig();
+    ensureAgents();
 
     console.log('dossier: initialized');
     console.log(`  data:   ${dataDir}`);

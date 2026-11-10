@@ -11,8 +11,8 @@ import { loadCareer } from '../career/load.js';
 import { loadConfig } from '../config/config.js';
 import {
   displayPath,
+  getRuntimeDir,
   resolveOutputDir,
-  runtimeDir,
 } from '../config/paths.js';
 import {
   verifyAnswer,
@@ -25,6 +25,7 @@ import {
   hasProjectCache,
   loadCandidates,
 } from '../projects/store.js';
+import { findTailoredResume } from '../resume/find.js';
 import { slugify } from '../util/slug.js';
 import {
   applyProfileToCareer,
@@ -140,6 +141,13 @@ export async function runAnswer(options: AnswerRunOptions): Promise<void> {
   const markdownPath = `${base}.md`;
   const jsonPath = `${base}.json`;
 
+  const tailored = findTailoredResume(slug, outDir);
+  if (tailored) {
+    console.log(
+      `dossier: using tailored resume ${displayPath(tailored.resumePath)}`,
+    );
+  }
+
   const prompt = buildAnswerPrompt({
     career,
     job,
@@ -149,6 +157,8 @@ export async function runAnswer(options: AnswerRunOptions): Promise<void> {
     client,
     profile,
     candidates,
+    resume: tailored?.resume,
+    trace: tailored?.trace,
   });
 
   console.log(
@@ -173,7 +183,7 @@ export async function runAnswer(options: AnswerRunOptions): Promise<void> {
       agent: 'dossier-answerer',
       title: `Answer: ${slug}`,
       timeout: options.timeout ?? 10 * 60 * 1000,
-      cwd: runtimeDir,
+      cwd: getRuntimeDir(),
       provider: options.provider,
       model: options.model,
       accept: (value) =>
@@ -276,6 +286,8 @@ export async function runAnswer(options: AnswerRunOptions): Promise<void> {
         generatedAt: new Date().toISOString(),
         sources: {
           profile: profile?.cachePath ?? null,
+          resume: tailored?.resumePath ?? null,
+          trace: tailored?.tracePath ?? null,
         },
       },
       null,

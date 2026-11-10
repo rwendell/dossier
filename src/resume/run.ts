@@ -8,10 +8,10 @@ import { loadCareer } from '../career/load.js';
 import type { Career } from '../career/schema.js';
 import { loadConfig } from '../config/config.js';
 import {
-  cacheDir,
   displayPath,
+  getCacheDir,
+  getRuntimeDir,
   resolveOutputDir,
-  runtimeDir,
 } from '../config/paths.js';
 import { readJobInput } from '../job/input.js';
 import { ensureAgents, reloadOpencode } from '../llm/agents.js';
@@ -132,7 +132,7 @@ export async function runTailor(options: TailorRunOptions): Promise<void> {
   const resumePath = `${base}.json`;
   const tracePath = `${base}.trace.json`;
   const pdfPath = `${base}.pdf`;
-  const workDir = resolve(cacheDir, 'tailor', slug);
+  const workDir = resolve(getCacheDir(), 'tailor', slug);
   mkdirSync(workDir, { recursive: true });
   const htmlPath = resolve(workDir, 'measure.html');
 
@@ -163,7 +163,7 @@ export async function runTailor(options: TailorRunOptions): Promise<void> {
       agent: 'dossier-tailor',
       title: `Tailor: ${slug}`,
       timeout: options.timeout ?? 10 * 60 * 1000,
-      cwd: runtimeDir,
+      cwd: getRuntimeDir(),
       provider: options.provider,
       model: options.model,
       accept: (value) => {

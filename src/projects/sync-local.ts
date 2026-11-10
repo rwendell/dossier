@@ -10,10 +10,10 @@ import { homedir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { loadCareer } from '../career/load.js';
 import {
-  githubCacheFile,
-  localProjectsCacheFile,
+  expandHome,
+  getGithubCacheFile,
+  getLocalProjectsCacheFile,
 } from '../config/paths.js';
-import { expandHome } from '../config/paths.js';
 import type { GitHubData, LocalProject, LocalProjectsData } from './types.js';
 
 export interface SyncLocalOptions {
@@ -52,7 +52,7 @@ export function syncLocal(options: SyncLocalOptions = {}): LocalProjectsData {
   }
 
   const outPath = resolve(
-    options.out || localProjectsCacheFile,
+    options.out || getLocalProjectsCacheFile(),
   );
   const readmeChars = options.readmeChars ?? 5000;
   const maxFiles = options.maxFiles ?? 2500;
@@ -70,8 +70,9 @@ export function syncLocal(options: SyncLocalOptions = {}): LocalProjectsData {
   const effectiveExclude = new Set(exclude);
   for (const name of include) effectiveExclude.delete(name);
 
-  const github = existsSync(githubCacheFile)
-    ? (JSON.parse(readFileSync(githubCacheFile, 'utf8')) as GitHubData)
+  const githubPath = getGithubCacheFile();
+  const github = existsSync(githubPath)
+    ? (JSON.parse(readFileSync(githubPath, 'utf8')) as GitHubData)
     : { repos: [], orgs: [] };
   const githubFullNames = new Set(
     (github.repos ?? []).map((repo) =>

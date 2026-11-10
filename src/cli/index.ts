@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
+import { setCliCacheSelection, type CacheMode } from '../config/paths.js';
 import { doctorCommand } from './commands/doctor.js';
 import { initCommand } from './commands/init.js';
 import { pathsCommand } from './commands/paths.js';
@@ -17,6 +18,45 @@ const cli = yargs(hideBin(process.argv))
   .usage('$0 <command> [options]')
   .parserConfiguration({
     'boolean-negation': false,
+  })
+  .option('cache-mode', {
+    type: 'string',
+    choices: ['auto', 'dev', 'release'] as const,
+    describe: 'Cache location mode',
+  })
+  .option('cache-dir', {
+    type: 'string',
+    describe: 'Explicit cache directory (overrides cache mode)',
+  })
+  .option('dev', {
+    type: 'boolean',
+    describe: 'Use the project-local .cache (same as --cache-mode dev)',
+    default: false,
+  })
+  .option('release', {
+    type: 'boolean',
+    describe: 'Use the XDG cache (same as --cache-mode release)',
+    default: false,
+  })
+  .middleware((argv) => {
+    const values = argv as {
+      cacheMode?: CacheMode;
+      cacheDir?: string;
+      dev?: boolean;
+      release?: boolean;
+    };
+    if (values.dev && values.release) {
+      throw new Error('Use only one of --dev or --release.');
+    }
+    const mode = values.dev
+      ? 'dev'
+      : values.release
+        ? 'release'
+        : values.cacheMode;
+    setCliCacheSelection({
+      mode,
+      dir: values.cacheDir,
+    });
   })
   .command(initCommand)
   .command(doctorCommand)

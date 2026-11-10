@@ -16,6 +16,8 @@ export interface ProposalPromptInput {
   settings: ProposalSettings;
   questions: string[];
   requiredOpening: string;
+  resume?: unknown;
+  trace?: unknown;
 }
 
 export function buildProposalPrompt({
@@ -29,6 +31,8 @@ export function buildProposalPrompt({
   settings,
   questions,
   requiredOpening,
+  resume,
+  trace,
 }: ProposalPromptInput): string {
   const sections: string[] = [
     '<application>',
@@ -83,6 +87,26 @@ export function buildProposalPrompt({
     '<career>',
     stringifyYaml(career).trim(),
     '</career>',
+  );
+
+  if (resume) {
+    sections.push(
+      '',
+      '<tailored_resume>',
+      JSON.stringify(resume, null, 2),
+      '</tailored_resume>',
+    );
+  }
+  if (trace) {
+    sections.push(
+      '',
+      '<resume_trace>',
+      JSON.stringify(trace, null, 2),
+      '</resume_trace>',
+    );
+  }
+
+  sections.push(
     '',
     '<project_candidates>',
     JSON.stringify(candidates, null, 2),
@@ -122,6 +146,7 @@ export function buildProposalPrompt({
   sections.push(
     '',
     'Write a proposal that is ready to paste into Upwork. Follow the job description\'s application instructions exactly, including any required opening word or phrase and any questions the client asks in the description.',
+    'When a `<tailored_resume>` is present, use it as the primary framing and keep the proposal consistent with it.',
     '<upwork_profile> is the public Upwork profile. Use it for identity, location, skills, and portfolio context; the career fact bank takes precedence for employment, dates, metrics, and achievements. When `<upwork_defaults>` rate or availability differs from the profile, use `<upwork_defaults>`.',
     questions.length > 0
       ? 'Answer every supplied screening question separately in `screening_answers`, in the same order.'

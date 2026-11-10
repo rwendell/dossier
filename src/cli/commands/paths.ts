@@ -1,16 +1,17 @@
 import type { CommandModule } from 'yargs';
 import { loadConfig } from '../../config/config.js';
 import {
-  cacheDir,
   careerFile,
   configDir,
   configFile,
   dataDir,
-  isDev,
-  profileCacheDir,
+  getCacheDir,
+  getCacheMode,
+  getCacheSource,
+  getProfileCacheDir,
+  getRuntimeDir,
   proposalFile,
   resolveOutputDir,
-  runtimeDir,
   stateDir,
 } from '../../config/paths.js';
 
@@ -37,14 +38,15 @@ export const pathsCommand: CommandModule<object, PathsArgs> = {
     const { config } = loadConfig();
     const output = resolveOutputDir(config.output.dir, argv.out);
     const paths = {
-      mode: isDev ? 'dev' : 'release',
+      mode: getCacheMode(),
+      cacheSource: getCacheSource(),
       data: dataDir,
       config: configDir,
       configFile,
-      cache: cacheDir,
+      cache: getCacheDir(),
       state: stateDir,
-      runtime: runtimeDir,
-      profileCache: profileCacheDir,
+      runtime: getRuntimeDir(),
+      profileCache: getProfileCacheDir(),
       career: careerFile,
       proposal: proposalFile,
       output,

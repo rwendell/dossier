@@ -54,10 +54,10 @@ Cache location is mode-aware:
 
 - running from a source checkout: `<repo>/.cache`
 - running from an installed/published package: `~/.cache/dossier`
-- `DOSSIER_CACHE_HOME` overrides either
-- `DOSSIER_DEV=1` or `DOSSIER_DEV=0` forces dev or release mode
-
-`dossier paths` prints the resolved mode and cache path.
+- `config.yml` `cache.mode`/`cache.dir`
+- global `--cache-mode`, `--cache-dir`, `--dev`, `--release`
+- `DOSSIER_CACHE_HOME` / `DOSSIER_CACHE_MODE` / `DOSSIER_DEV` overrides
+- `dossier paths` prints the resolved mode, cache source, and cache path
 
 Machine config:
 
@@ -65,10 +65,28 @@ Machine config:
 # ~/.config/dossier/config.yml
 output:
   dir: ""               # empty = current directory
+
+cache:
+  mode: auto            # auto | dev | release
+  dir: ""               # optional explicit path; overrides mode
+
 theme: jsonresume-theme-straightforward
 provider: auto
 editor: ""
 ```
+
+Global cache flags work on every command:
+
+```bash
+dossier --cache-mode dev proposal job.md
+dossier --cache-mode release proposal job.md
+dossier --cache-dir /tmp/dossier-cache proposal job.md
+dossier --dev proposal job.md
+dossier --release proposal job.md
+```
+
+Precedence: `--cache-dir` / `--cache-mode` / `--dev` / `--release` → `config.yml`
+→ `DOSSIER_CACHE_*` / `DOSSIER_DEV` → auto detection.
 
 Publishing is intentionally not a dossier command. Generated JSON is written to
 the current directory; copy it into the `json-resume` checkout and let that repo
@@ -176,6 +194,10 @@ Outputs default to the current directory:
 Use `--out ~/Documents/proposals` to write elsewhere and `--name` to keep
 variants.
 
+If `resume-<slug>.json` and `resume-<slug>.trace.json` are present in the
+output directory (for example, from `dossier tailor`), `proposal` and `answer`
+use them as the primary framing automatically.
+
 Public Upwork `/jobs/...` URLs use the headless Chrome fallback. Saved-jobs
 modal URLs (`/nx/search/jobs/saved/details/...`) and search URLs need your
 logged-in session and are rejected. If Upwork shows a Cloudflare check, save the
@@ -222,6 +244,7 @@ v0.1 implements:
 - `verify` for a generated JSON/trace/PDF
 - `sync github` / `sync local` project metadata
 - keyword candidate ranking used by proposal/answer/tailor
+- automatic reuse of a matching tailored resume/trace in proposal/answer
 - `score` to explain candidate ranking
 - `clean` for the regenerable cache
 

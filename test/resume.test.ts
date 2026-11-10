@@ -1,9 +1,13 @@
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { CareerSchema } from '../src/career/schema.js';
 import {
   collectUnusedAchievements,
   trimResume,
 } from '../src/resume/one-page.js';
+import { findTailoredResume } from '../src/resume/find.js';
 import {
   fillProjectBulletTrace,
   hasTraceCoverage,
@@ -171,6 +175,19 @@ describe('resume trace and one-page helpers', () => {
 });
 
 describe('tailored resume verification', () => {
+  it('finds a tailored resume by slug', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'dossier-resume-'));
+    try {
+      writeFileSync(join(dir, 'resume-acme.json'), JSON.stringify(resume));
+      writeFileSync(join(dir, 'resume-acme.trace.json'), JSON.stringify(trace));
+      const found = findTailoredResume('acme', dir);
+      expect(found?.resume.basics?.name).toBe('Ryan W.');
+      expect(found?.trace?.bullets).toHaveLength(2);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   it('accepts a schema-valid, grounded resume and trace', async () => {
     const result = await verifyTailoredResume({
       resume,
