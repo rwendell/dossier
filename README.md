@@ -54,12 +54,14 @@ Machine config:
 # ~/.config/dossier/config.yml
 output:
   dir: ""               # empty = current directory
-publish:
-  repo: ~/projects/json-resume
 theme: jsonresume-theme-straightforward
 provider: auto
 editor: ""
 ```
+
+Publishing is intentionally not a dossier command. Generated JSON is written to
+the current directory; copy it into the `json-resume` checkout and let that repo
+build, validate, and publish.
 
 ## Initialize or migrate
 
@@ -139,6 +141,17 @@ job text to a file and pass that instead.
 The public profile is cached for 24 hours; `--refresh` fetches it again.
 `--no-profile` ignores `profile.url` from `proposal.yml`.
 
+## Verify and clean
+
+```bash
+dossier verify ./resume-acme.json
+dossier verify ./resume-acme.pdf
+dossier clean
+```
+
+`verify` checks JSON Resume schema, trace coverage, evidence ids, dates, numbers,
+excluded skills, and the PDF page count. `clean` removes the regenerable cache.
+
 ## Inspect paths and health
 
 ```bash
@@ -163,12 +176,14 @@ v0.1 implements:
   verification
 - `tailor` with JSON Resume output, `resumed` PDF rendering, one-page trimming,
   sparse-page filling, and trace verification
+- `verify` for a generated JSON/trace/PDF
+- `clean` for the regenerable cache
 
 Next milestones:
 
 - GitHub/local project sync and candidate ranking
-- `publish` into a `json-resume` checkout
-- `verify`, `score`, and `clean`
+- `score`
+- further resume/publish workflows in the `json-resume` repo itself
 
 The old Node app in `json-resume` remains the reference implementation until
 the TypeScript version reaches parity.

@@ -3,10 +3,6 @@ output:
   # Empty means the current working directory.
   dir: ""
 
-publish:
-  # Optional checkout of the json-resume site repo.
-  repo: ""
-
 theme: "jsonresume-theme-straightforward"
 provider: "auto"
 editor: ""
