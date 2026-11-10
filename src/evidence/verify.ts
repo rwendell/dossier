@@ -89,6 +89,124 @@ export interface VerifyProposalInput {
   profile?: UpworkProfile | null;
 }
 
+export type QuestionType =
+  | 'application'
+  | 'behavioral'
+  | 'motivation'
+  | 'interview-prep'
+  | 'other';
+
+export interface AnswerOutput {
+  question?: string;
+  question_type?: string;
+  answer: string;
+  claims?: Claim[];
+  evidence?: string[];
+  gaps?: string[];
+  follow_up?: string[];
+}
+
+export interface VerifyAnswerInput {
+  output: AnswerOutput;
+  career: Career;
+  candidates?: Candidate[];
+  hint?: string;
+  client?: string;
+  profile?: UpworkProfile | null;
+}
+
+export interface VerifyAnswerResult {
+  errors: string[];
+  warnings: string[];
+  claimCount: number;
+  evidenceCount: number;
+  gapCount: number;
+}
+
+export function verifyAnswer({
+  output,
+  career,
+  candidates = [],
+  hint = '',
+  client = '',
+  profile = null,
+}: VerifyAnswerInput): VerifyAnswerResult {
+  const errors: string[] = [];
+  const warnings: string[] = [];
+
+  const portfolioEvidence = Object.fromEntries(
+    (profile?.portfolio ?? [])
+      .filter((item) => item.evidence)
+      .map((item) => [
+        item.evidence,
+        [item.title, ...item.tags].filter(Boolean).join('\n'),
+      ]),
+  );
+  const known = buildEvidenceMap(career, candidates, hint, {
+    client,
+    profile: profileEvidenceText(profile),
+    ...portfolioEvidence,
+  });
+  const allowedYears = buildAllowedYears(career);
+
+  const answer =
+    typeof output.answer === 'string' ? output.answer.trim() : '';
+  const claims = Array.isArray(output.claims) ? output.claims : [];
+  const evidence = Array.isArray(output.evidence) ? output.evidence : [];
+  const gaps = Array.isArray(output.gaps) ? output.gaps : [];
+
+  if (!answer) errors.push('answer is missing or empty');
+  if (!Array.isArray(output.claims)) errors.push('claims is missing');
+  if (!Array.isArray(output.evidence)) errors.push('evidence is missing');
+  if (!Array.isArray(output.gaps)) warnings.push('gaps is missing');
+
+  const allowedTypes: QuestionType[] = [
+    'application',
+    'behavioral',
+    'motivation',
+    'interview-prep',
+    'other',
+  ];
+  if (!allowedTypes.includes(output.question_type as QuestionType)) {
+    warnings.push(`unexpected question_type "${output.question_type}"`);
+  }
+
+  verifyClaims({
+    claims,
+    known,
+    allowedYears,
+    errors,
+    warnings,
+  });
+  verifyEvidence({ evidence, known, errors });
+  verifyClaimEvidenceUnion({ claims, evidence, warnings });
+
+  if (
+    hint &&
+    !claims.some((entry) => (entry.evidence ?? []).includes('hint'))
+  ) {
+    warnings.push(
+      'a hint was provided but no claims cite it; review whether the hint was used',
+    );
+  }
+
+  if (claims.length === 0 && output.question_type !== 'interview-prep') {
+    warnings.push('no factual claims were provided; review the answer manually');
+  }
+
+  if (answer) {
+    checkLocationClaims({ proposal: answer, career, hint, profile, errors });
+  }
+
+  return {
+    errors,
+    warnings,
+    claimCount: claims.length,
+    evidenceCount: evidence.length,
+    gapCount: gaps.length,
+  };
+}
+
 export function verifyProposal({
   output,
   career,

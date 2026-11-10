@@ -43,9 +43,12 @@ export const doctorCommand: CommandModule = {
     );
     check('proposal.yml', existsSync(proposalFile), proposalFile, true);
     check('cache dir', existsSync(cacheDir), cacheDir, false);
-    const agentInstalled =
-      existsSync(`${opencodeAgentsDir}/dossier-proposer.md`) ||
-      existsSync(`${agentsDir}/dossier-proposer.md`);
+    const requiredAgents = ['dossier-proposer.md', 'dossier-answerer.md'];
+    const agentInstalled = requiredAgents.every(
+      (file) =>
+        existsSync(`${opencodeAgentsDir}/${file}`) ||
+        existsSync(`${agentsDir}/${file}`),
+    );
     check(
       'agents',
       agentInstalled,

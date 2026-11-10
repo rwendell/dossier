@@ -92,6 +92,16 @@ dossier proposal job.md -q "How would you approach the first two weeks?"
 dossier proposal job.md --profile 'https://www.upwork.com/freelancers/~...'
 ```
 
+## Answer an application question
+
+```bash
+dossier answer job.md -q 'Why is this role a good fit?'
+dossier answer job.md -q question.txt --hint 'Emphasize the Kafka work'
+```
+
+Answers are written to `./answer-<slug>.<question>.md` and `.json`, and copied
+to the clipboard by default.
+
 Outputs default to the current directory:
 
 ```text
@@ -130,10 +140,11 @@ v0.1 implements:
 - `doctor`
 - `proposal` with Upwork job/profile fetching, LLM provider fallback, evidence
   verification, clipboard copy, and CWD/`--out` output
+- `answer` for application and interview questions, with the same grounding and
+  verification
 
 Next milestones:
 
-- `answer`
 - `tailor` with one-page rendering via `resumed`
 - GitHub/local project sync and candidate ranking
 - `publish` into a `json-resume` checkout

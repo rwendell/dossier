@@ -13,7 +13,7 @@ import {
   type ProposalOutput,
 } from '../evidence/verify.js';
 import { readJobInput } from '../job/input.js';
-import { ensureAgents } from '../llm/agents.js';
+import { ensureAgents, reloadOpencode } from '../llm/agents.js';
 import { LlmError, runAgent } from '../llm/providers.js';
 import { slugify, truncate } from '../util/slug.js';
 import {
@@ -202,6 +202,7 @@ export async function runProposal(
   }
 
   ensureAgents();
+  reloadOpencode();
   let generated;
   try {
     generated = runAgent({
