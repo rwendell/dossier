@@ -12,6 +12,7 @@ import { verifyCommand } from './commands/verify.js';
 import { cleanCommand } from './commands/clean.js';
 import { syncCommand } from './commands/sync.js';
 import { scoreCommand } from './commands/score.js';
+import { pullPrivateCommand } from './commands/pull-private.js';
 
 const cli = yargs(hideBin(process.argv))
   .scriptName('dossier')
@@ -68,6 +69,7 @@ const cli = yargs(hideBin(process.argv))
   .command(cleanCommand)
   .command(syncCommand)
   .command(scoreCommand)
+  .command(pullPrivateCommand)
   .demandCommand(1, 'Choose a command.')
   .strict()
   .help()

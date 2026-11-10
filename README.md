@@ -114,6 +114,22 @@ This copies `data/career.yml`, `data/career.private.yml`, and `data/upwork.yml`
 to the XDG data directory, renaming `upwork.yml` to `proposal.yml`. Existing
 files are kept unless `--force` is passed.
 
+## Pull the private overlay
+
+Keep `career.private.yml` in a secret GitHub gist and pull it down on another
+machine:
+
+```bash
+dossier pull-private
+dossier pull-private --gist <id|url>
+CAREER_PRIVATE_GIST_ID=<id> dossier pull-private
+```
+
+Resolution order: `--gist`, `CAREER_PRIVATE_GIST_ID`, then auto-discovery of a
+secret gist containing `career.private.yml`. Public gists are refused unless
+`--allow-public` is passed. A changed local file is backed up under
+`<cache>/pull-private/`.
+
 ## Tailor a resume
 
 ```bash
@@ -246,6 +262,7 @@ v0.1 implements:
 - keyword candidate ranking used by proposal/answer/tailor
 - automatic reuse of a matching tailored resume/trace in proposal/answer
 - `score` to explain candidate ranking
+- `pull-private` for the secret PII gist
 - `clean` for the regenerable cache
 
 Next milestones:
