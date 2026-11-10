@@ -1,13 +1,14 @@
 import { execFileSync } from 'node:child_process';
 import {
   existsSync,
+  mkdirSync,
   readFileSync,
   readdirSync,
   statSync,
   writeFileSync,
 } from 'node:fs';
 import { homedir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { loadCareer } from '../career/load.js';
 import {
   expandHome,
@@ -128,6 +129,7 @@ export function syncLocal(options: SyncLocalOptions = {}): LocalProjectsData {
     syncedAt: new Date().toISOString(),
     projects,
   };
+  mkdirSync(dirname(outPath), { recursive: true });
   writeFileSync(outPath, `${JSON.stringify(output, null, 2)}\n`);
   console.log(
     `dossier: wrote ${projects.length} local project(s) (${projects.filter((project) => project.included).length} eligible) to ${outPath}`,

@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process';
-import { existsSync, writeFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
 import { loadCareer } from '../career/load.js';
 import { getGithubCacheFile } from '../config/paths.js';
 import { syncLocal } from './sync-local.js';
@@ -212,6 +212,7 @@ export function syncGithub(options: SyncGithubOptions = {}): GitHubData {
     pinned,
     repos: synced,
   };
+  mkdirSync(dirname(outPath), { recursive: true });
   writeFileSync(outPath, `${JSON.stringify(output, null, 2)}\n`);
   console.log(
     `dossier: wrote ${synced.length} repos (${synced.filter((repo) => repo.included).length} eligible; ${orgRepos.length} from orgs) to ${outPath}`,
