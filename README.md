@@ -191,6 +191,11 @@ until it fits on one page, then filled from unused fact-bank achievements when
 it is too sparse. The PDF opens when the run finishes. Disable that with
 `--no-open` or `--open=false`, or set `output.open: false` in `config.yml`.
 
+On WSL the PDF is handed to the Windows default handler (`wslview`, then
+PowerShell `Start-Process`, then `cmd /c start`). Shell aliases and functions,
+such as a fish `open` wrapper, are not visible to spawned processes, so dossier
+never relies on them.
+
 Tailoring never fetches a freelance profile on its own. Identity, contact
 details, and location come from `career.yml` and `career.private.yml`. Pass
 `--profile <url>` only when you explicitly want to enrich the basics from a
