@@ -47,11 +47,12 @@ export const tailorCommand: CommandModule<object, TailorArgs> = {
       })
       .option('profile', {
         type: 'string',
-        describe: 'Public Upwork profile URL for identity/location defaults',
+        describe:
+          'Fetch identity/location defaults from this public profile URL',
       })
       .option('no-profile', {
         type: 'boolean',
-        describe: 'Ignore profile.url from freelance.yml',
+        describe: 'Ignore --profile and use only career.yml',
         default: false,
       })
       .option('theme', {

@@ -28,7 +28,6 @@ import {
   applyProfileToCareer,
   loadUpworkProfile,
 } from '../upwork/profile.js';
-import { loadFreelanceConfig } from '../upwork/settings.js';
 import { applyBasicsUrlPolicy } from './basics.js';
 import {
   normalizeNumberSpacing,
@@ -79,16 +78,11 @@ export interface TailorRunOptions {
 
 export async function runTailor(options: TailorRunOptions): Promise<void> {
   const { config } = loadConfig();
-  const { config: freelanceConfig } = loadFreelanceConfig();
 
-  const configuredProfileUrl =
-    typeof freelanceConfig.profile === 'string'
-      ? freelanceConfig.profile
-      : freelanceConfig.profile?.url;
-  const profileUrl =
-    options.profile ||
-    (!options.noProfile ? configuredProfileUrl : '') ||
-    '';
+  // Resume tailoring is freelance-agnostic: it only fetches a public profile
+  // when one is passed explicitly. Otherwise basics come from career.yml and
+  // career.private.yml.
+  const profileUrl = options.noProfile ? '' : (options.profile ?? '');
 
   const { career } = loadCareer();
 

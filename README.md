@@ -188,6 +188,12 @@ print layout and automatically trimmed (highlights, projects, skills, summary)
 until it fits on one page, then filled from unused fact-bank achievements when
 it is too sparse. The PDF opens when the run finishes. Disable that with
 `--no-open` or `--open=false`, or set `output.open: false` in `config.yml`.
+
+Tailoring never fetches a freelance profile on its own. Identity, contact
+details, and location come from `career.yml` and `career.private.yml`. Pass
+`--profile <url>` only when you explicitly want to enrich the basics from a
+public profile.
+
 Outputs default to the current directory:
 
 ```text
