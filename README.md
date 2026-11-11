@@ -311,3 +311,13 @@ Next improvements:
 
 `json-resume` is now site-only: published JSON, render/build, validate, watch,
 and publish. Resume generation and career data live in dossier.
+
+## Releasing
+
+```bash
+aube login --registry https://registry.npmjs.org/ --scope @rwendell
+aube publish --access=public
+```
+
+Pushing a `v*` tag runs `.github/workflows/release.yml`, which publishes using
+the `NPM_TOKEN` repository secret.
