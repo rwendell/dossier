@@ -10,20 +10,17 @@ import { fileURLToPath } from 'node:url';
 import {
   ensureRuntimeDir,
   getAgentsDir,
-  opencodeAgentsDir,
 } from '../config/paths.js';
 
 export function ensureAgents(): string {
   ensureRuntimeDir();
   const agentsDir = getAgentsDir();
-  mkdirSync(opencodeAgentsDir, { recursive: true });
   const source = fileURLToPath(new URL('../../agents/', import.meta.url));
   try {
     for (const file of readdirSync(source)) {
       if (!file.endsWith('.md')) continue;
       const contents = `${source}/${file}`;
       copyIfChanged(contents, `${agentsDir}/${file}`);
-      copyIfChanged(contents, `${opencodeAgentsDir}/${file}`);
     }
   } catch (error) {
     throw new Error(

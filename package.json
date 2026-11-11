@@ -1,10 +1,10 @@
 {
   "name": "@rwendell/dossier",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Grounded resume, application answer, and Upwork proposal generation from a local career dossier.",
   "type": "module",
   "bin": {
-    "dossier": "./dist/cli/index.js"
+    "dossier": "dist/cli/index.js"
   },
   "files": [
     "dist",

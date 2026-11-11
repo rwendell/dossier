@@ -113,12 +113,6 @@ export function getLocalProjectsCacheFile(): string {
   return join(getCacheDir(), 'local-projects.json');
 }
 
-const opencodeConfigBase = process.env.XDG_CONFIG_HOME
-  ? resolve(process.env.XDG_CONFIG_HOME)
-  : join(homedir(), '.config');
-export const opencodeConfigDir = join(opencodeConfigBase, 'opencode');
-export const opencodeAgentsDir = join(opencodeConfigDir, 'agents');
-
 export function ensureBaseDirs(): void {
   for (const dir of [dataDir, configDir, getCacheDir(), stateDir]) {
     mkdirSync(dir, { recursive: true });

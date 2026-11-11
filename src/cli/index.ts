@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { readFileSync } from 'node:fs';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import { setCliCacheSelection, type CacheMode } from '../config/paths.js';
@@ -13,6 +14,10 @@ import { cleanCommand } from './commands/clean.js';
 import { syncCommand } from './commands/sync.js';
 import { scoreCommand } from './commands/score.js';
 import { pullPrivateCommand } from './commands/pull-private.js';
+
+const packageJson = JSON.parse(
+  readFileSync(new URL('../../package.json', import.meta.url), 'utf8'),
+) as { version?: string };
 
 const cli = yargs(hideBin(process.argv))
   .scriptName('dossier')
@@ -74,7 +79,7 @@ const cli = yargs(hideBin(process.argv))
   .strict()
   .help()
   .alias('h', 'help')
-  .version()
+  .version(packageJson.version ?? '0.0.0')
   .fail((message, error) => {
     if (error) throw error;
     console.error(`dossier: ${message}`);

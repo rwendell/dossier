@@ -11,7 +11,6 @@ import {
   getCacheSource,
   getGithubCacheFile,
   getLocalProjectsCacheFile,
-  opencodeAgentsDir,
   privateCareerFile,
   freelanceFile,
 } from '../../config/paths.js';
@@ -65,19 +64,10 @@ export const doctorCommand: CommandModule = {
       'dossier-answerer.md',
       'dossier-tailor.md',
     ];
-    const agentInstalled = requiredAgents.every(
-      (file) =>
-        existsSync(`${opencodeAgentsDir}/${file}`) ||
-        existsSync(`${agentsDir}/${file}`),
+    const agentInstalled = requiredAgents.every((file) =>
+      existsSync(`${agentsDir}/${file}`),
     );
-    check(
-      'agents',
-      agentInstalled,
-      existsSync(`${opencodeAgentsDir}/dossier-proposer.md`)
-        ? opencodeAgentsDir
-        : agentsDir,
-      true,
-    );
+    check('agents', agentInstalled, agentsDir, true);
 
     check(
       'opencode',
@@ -113,11 +103,8 @@ export const doctorCommand: CommandModule = {
       }`,
     );
 
-    const installedAgentDir = existsSync(opencodeAgentsDir)
-      ? opencodeAgentsDir
-      : agentsDir;
-    if (existsSync(installedAgentDir)) {
-      const agents = readdirSync(installedAgentDir).filter((file) =>
+    if (existsSync(agentsDir)) {
+      const agents = readdirSync(agentsDir).filter((file) =>
         file.endsWith('.md'),
       );
       console.log(

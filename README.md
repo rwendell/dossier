@@ -41,14 +41,15 @@ Requirements:
   config.yml
 
 ~/.cache/dossier/
-  opencode/.opencode/agents/   # runtime agent prompts
+  opencode/.opencode/agents/   # runtime agent prompts (not global)
   freelance/profile-*.json     # cached public freelance profile
   github.json                  # synced GitHub/org repos
   local-projects.json          # scanned ~/projects
-
-~/.config/opencode/agents/
-  dossier-proposer.md          # installed global agent prompt
 ```
+
+Dossier agents are project-local to its runtime directory. OpenCode is invoked
+with that directory as its working directory, so `dossier-*` agents do not
+appear in your global OpenCode TUI.
 
 Cache location is mode-aware:
 
