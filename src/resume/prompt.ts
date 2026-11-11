@@ -51,6 +51,9 @@ export function buildTailorPrompt({
     'The project entries above are candidates, not verified facts. They may come from personal GitHub, organizations, or local ~/projects repositories. Use a candidate only when it directly demonstrates a requirement and its README or local commit context supports the claim. Cite the entry\'s `evidence` value. Do not include a candidate merely because it is recent or pinned.',
     '',
     `Tailor the resume for the ${job.title} role${job.company ? ` at ${job.company}` : ''}.`,
+    job.source === 'generic'
+      ? 'This is a general-purpose resume, not a specific job. Follow the generic prioritization criteria in the job description.'
+      : '',
     'The resume must fit on exactly one page and fill it. Return the JSON object described in your system prompt. Output JSON only.',
   );
 

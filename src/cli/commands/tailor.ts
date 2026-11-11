@@ -9,6 +9,7 @@ interface TailorArgs {
   company?: string;
   url?: string;
   description?: string;
+  generic?: boolean;
   profile?: string;
   noProfile?: boolean;
   theme?: string;
@@ -38,6 +39,11 @@ export const tailorCommand: CommandModule<object, TailorArgs> = {
       .option('name', {
         type: 'string',
         describe: 'Resume filename suffix',
+      })
+      .option('generic', {
+        type: 'boolean',
+        describe: 'Build a general-purpose resume; default when no job is given',
+        default: false,
       })
       .option('profile', {
         type: 'string',
@@ -115,6 +121,7 @@ export const tailorCommand: CommandModule<object, TailorArgs> = {
       company: argv.company,
       url: argv.url,
       description: argv.description,
+      generic: argv.generic,
       profile: argv.profile,
       noProfile: argv.noProfile,
       theme: argv.theme,

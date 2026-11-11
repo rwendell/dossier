@@ -14,6 +14,7 @@ import {
   resolveOutputDir,
 } from '../config/paths.js';
 import { readJobInput } from '../job/input.js';
+import type { Job } from '../job/types.js';
 import { ensureAgents, reloadOpencode } from '../llm/agents.js';
 import { LlmError, runAgent } from '../llm/providers.js';
 import {
@@ -62,6 +63,7 @@ export interface TailorRunOptions {
   company?: string;
   url?: string;
   description?: string;
+  generic?: boolean;
   profile?: string;
   noProfile?: boolean;
   theme?: string;
@@ -105,13 +107,51 @@ export async function runTailor(options: TailorRunOptions): Promise<void> {
     }
   }
 
-  const job = await readJobInput({
-    input: options.input,
-    title: options.title,
-    company: options.company,
-    url: options.url,
-    description: options.description,
-  });
+  const autoGeneric =
+    !options.generic &&
+    !options.input &&
+    !options.description &&
+    !options.url;
+  const generic = Boolean(options.generic || autoGeneric);
+
+  let job: Job;
+  if (generic) {
+    if (options.input) {
+      throw new Error(
+        '--generic builds a general resume and does not take a job file or URL.',
+      );
+    }
+    if (autoGeneric) {
+      console.log(
+        'dossier: no job source provided; building the generic resume',
+      );
+    }
+    const genericConfig = career.generic ?? {};
+    job = {
+      title:
+        options.title ||
+        String(genericConfig.title ?? 'Software Engineer'),
+      company: options.company || '',
+      url: options.url || '',
+      body:
+        options.description ||
+        String(
+          genericConfig.description ??
+            'Build a general-purpose software engineering resume using the strongest and most broadly relevant evidence in the fact bank.',
+        ),
+      source: 'generic',
+      details: {},
+    };
+  } else {
+    job = await readJobInput({
+      input: options.input,
+      title: options.title,
+      company: options.company,
+      url: options.url,
+      description: options.description,
+    });
+  }
+
   if (!job.title) {
     throw new Error(
       'Could not determine a job title. Pass --title, or use a job URL/file with a title.',
@@ -119,9 +159,10 @@ export async function runTailor(options: TailorRunOptions): Promise<void> {
   }
 
   const theme = options.theme || config.theme;
-  const slug =
-    slugify([job.company, job.title].filter(Boolean).join(' ')) ||
-    'application';
+  const slug = generic
+    ? 'generic'
+    : slugify([job.company, job.title].filter(Boolean).join(' ')) ||
+      'application';
   const outDir = resolveOutputDir(config.output.dir, options.out);
   mkdirSync(outDir, { recursive: true });
   const nameSlug = options.name
@@ -149,7 +190,11 @@ export async function runTailor(options: TailorRunOptions): Promise<void> {
   console.log(
     `dossier: ${job.company ? `${job.company} — ` : ''}${job.title}`,
   );
-  console.log(`dossier: output ${displayPath(pdfPath)}`);
+  console.log(
+    `dossier: output ${displayPath(
+      options.noRender ? resumePath : pdfPath,
+    )}`,
+  );
 
   if (options.debug) {
     writeFileSync(`${base}.prompt.txt`, prompt);

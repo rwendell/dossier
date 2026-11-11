@@ -169,6 +169,8 @@ secret gist containing `career.private.yml`. Public gists are refused unless
 ```bash
 dossier tailor 'https://www.upwork.com/jobs/...'
 dossier tailor job.md --out ~/Documents/resumes
+dossier tailor --generic
+dossier tailor                 # no job source -> generic resume
 dossier tailor job.md --no-render   # JSON + trace only
 ```
 
