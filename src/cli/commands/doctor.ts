@@ -15,6 +15,12 @@ import {
   freelanceFile,
 } from '../../config/paths.js';
 import { loadConfig } from '../../config/config.js';
+import {
+  fallbackFontsInstalled,
+  getFontDir,
+  isSymbolFont,
+  systemSerif,
+} from '../../resume/fonts.js';
 import { loadFreelanceConfig } from '../../upwork/settings.js';
 
 export const doctorCommand: CommandModule = {
@@ -88,6 +94,22 @@ export const doctorCommand: CommandModule = {
       check('chrome', existsSync(path), path, false);
     } catch (error) {
       check('chrome', false, (error as Error).message, false);
+    }
+
+    if (process.platform === 'linux') {
+      const serif = systemSerif();
+      const usable = serif ? !isSymbolFont(serif) : false;
+      const installed = fallbackFontsInstalled();
+      check(
+        'pdf fonts',
+        usable || installed,
+        usable
+          ? `${serif} (system)`
+          : installed
+            ? `fallback font (${getFontDir()})`
+            : `${serif ?? 'no serif'} resolves to a symbol font; run \`dossier fonts --install\``,
+        false,
+      );
     }
 
     console.log(

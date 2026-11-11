@@ -14,6 +14,7 @@ import { cleanCommand } from './commands/clean.js';
 import { syncCommand } from './commands/sync.js';
 import { scoreCommand } from './commands/score.js';
 import { pullPrivateCommand } from './commands/pull-private.js';
+import { fontsCommand } from './commands/fonts.js';
 
 const packageJson = JSON.parse(
   readFileSync(new URL('../../package.json', import.meta.url), 'utf8'),
@@ -75,6 +76,7 @@ const cli = yargs(hideBin(process.argv))
   .command(syncCommand)
   .command(scoreCommand)
   .command(pullPrivateCommand)
+  .command(fontsCommand)
   .demandCommand(1, 'Choose a command.')
   .strict()
   .help()

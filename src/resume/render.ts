@@ -35,38 +35,6 @@ export function renderHtml(
   }
 }
 
-export function renderPdf(
-  resumePath: string,
-  pdfPath: string,
-  theme: string,
-): void {
-  const result = spawnSync(
-    process.execPath,
-    [
-      resumedBin(),
-      'export',
-      resumePath,
-      '-o',
-      pdfPath,
-      '-t',
-      theme,
-      '--puppeteer-arg=--no-sandbox',
-    ],
-    {
-      cwd: packageRoot,
-      encoding: 'utf8',
-      timeout: 180_000,
-    },
-  );
-  if (result.error || result.status !== 0 || !existsSync(pdfPath)) {
-    const detail =
-      result.error?.message ||
-      result.stderr?.trim() ||
-      `exited with status ${result.status}`;
-    throw new Error(`Could not render resume PDF: ${detail}`);
-  }
-}
-
 export async function getPdfPageCount(pdfPath: string): Promise<number> {
   const pdf = await PDFDocument.load(readFileSync(pdfPath), {
     ignoreEncryption: true,
@@ -75,7 +43,12 @@ export async function getPdfPageCount(pdfPath: string): Promise<number> {
 }
 
 export interface PageMeasurer {
+  /** CSS injected into every measured/exported page, e.g. font overrides. */
+  setExtraCss(css: string | undefined): void;
+  /** The font-family stack the rendered document requests. */
+  fontFamily(htmlPath: string): Promise<string>;
   measure(htmlPath: string): Promise<number>;
+  renderPdf(htmlPath: string, pdfPath: string): Promise<void>;
   close(): Promise<void>;
 }
 
@@ -83,12 +56,44 @@ export async function createPageMeasurer(): Promise<PageMeasurer> {
   const puppeteer = (await import('puppeteer')).default;
   const browser = await puppeteer.launch({
     headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      // Allow @font-face to load the cached fallback font from disk.
+      '--allow-file-access-from-files',
+    ],
   });
+  let extraCss: string | undefined;
+
+  async function prepare(htmlPath: string) {
+    const page = await browser.newPage();
+    await page.goto(pathToFileURL(htmlPath).href, { waitUntil: 'load' });
+    if (extraCss) {
+      await page.addStyleTag({ content: extraCss });
+      await page.evaluate(() => document.fonts.ready);
+    }
+    return page;
+  }
 
   return {
-    async measure(htmlPath: string): Promise<number> {
+    setExtraCss(css: string | undefined): void {
+      extraCss = css;
+    },
+
+    async fontFamily(htmlPath: string): Promise<string> {
       const page = await browser.newPage();
+      try {
+        await page.goto(pathToFileURL(htmlPath).href, { waitUntil: 'load' });
+        return await page.evaluate(
+          () => getComputedStyle(document.body).fontFamily,
+        );
+      } finally {
+        await page.close();
+      }
+    },
+
+    async measure(htmlPath: string): Promise<number> {
+      const page = await prepare(htmlPath);
       try {
         await page.emulateMediaType('print');
         await page.setViewport({
@@ -96,7 +101,6 @@ export async function createPageMeasurer(): Promise<PageMeasurer> {
           height: PAGE_CONTENT_HEIGHT,
           deviceScaleFactor: 1,
         });
-        await page.goto(pathToFileURL(htmlPath).href, { waitUntil: 'load' });
         return await page.evaluate(() => {
           const resume =
             document.querySelector('#resume') ?? document.body;
@@ -106,6 +110,21 @@ export async function createPageMeasurer(): Promise<PageMeasurer> {
         await page.close();
       }
     },
+
+    async renderPdf(htmlPath: string, pdfPath: string): Promise<void> {
+      const page = await prepare(htmlPath);
+      try {
+        await page.pdf({
+          path: pdfPath,
+          format: 'Letter',
+          printBackground: true,
+          preferCSSPageSize: true,
+        });
+      } finally {
+        await page.close();
+      }
+    },
+
     async close(): Promise<void> {
       await browser.close();
     },

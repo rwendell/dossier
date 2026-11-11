@@ -43,11 +43,11 @@ import {
   TRIM_PLANS,
 } from './one-page.js';
 import { buildTailorPrompt } from './prompt.js';
+import { resolveFontOverride } from './fonts.js';
 import {
   createPageMeasurer,
   getPdfPageCount,
   renderHtml,
-  renderPdf,
   type PageMeasurer,
 } from './render.js';
 import { filterExcludedSkills } from './skills.js';
@@ -348,6 +348,24 @@ export async function runTailor(options: TailorRunOptions): Promise<void> {
   }
 }
 
+async function applyFontOverride(
+  measurer: PageMeasurer,
+  htmlPath: string,
+): Promise<void> {
+  const stack = await measurer.fontFamily(htmlPath);
+  const override = await resolveFontOverride(stack, (message) =>
+    console.log(`dossier: ${message}`),
+  );
+  if (!override) return;
+  console.warn(
+    `dossier: warning: theme font "${override.requested}" resolves to "${override.resolved}", which draws symbols instead of letters`,
+  );
+  console.warn(
+    'dossier: using the fallback serif for the PDF; install a serif font (e.g. fonts-liberation) to use the theme font',
+  );
+  measurer.setExtraCss(override.css);
+}
+
 async function ensureOnePage({
   resume,
   trace,
@@ -371,6 +389,7 @@ async function ensureOnePage({
 }): Promise<void> {
   writeResumeFiles(resumePath, tracePath, resume, trace);
   renderHtml(resumePath, htmlPath, theme);
+  await applyFontOverride(measurer, htmlPath);
   let height = await measurer.measure(htmlPath);
   console.log(
     `dossier: draft fill ${Math.round(height)}px (page ${PAGE_CONTENT_HEIGHT}px)`,
@@ -378,7 +397,7 @@ async function ensureOnePage({
 
   let pages: number | null = null;
   if (height <= PAGE_CONTENT_HEIGHT) {
-    renderPdf(resumePath, pdfPath, theme);
+    await measurer.renderPdf(htmlPath, pdfPath);
     pages = await getPdfPageCount(pdfPath);
     if (pages === 1) {
       await ensureFilled({
@@ -417,7 +436,7 @@ async function ensureOnePage({
       continue;
     }
 
-    renderPdf(resumePath, pdfPath, theme);
+    await measurer.renderPdf(htmlPath, pdfPath);
     pages = await getPdfPageCount(pdfPath);
     if (pages === 1) {
       console.log('dossier: PDF now fits on one page');
@@ -503,13 +522,13 @@ async function ensureFilled({
   }
 
   if (height < MIN_FILL_HEIGHT) {
-    renderPdf(resumePath, pdfPath, theme);
+    await measurer.renderPdf(htmlPath, pdfPath);
     throw new Error(
       `PDF fits on one page but is too sparse (${Math.round(height)}px; minimum ${MIN_FILL_HEIGHT}px). Add more achievements to career.yml. Files are preserved at ${resumePath} and ${tracePath}.`,
     );
   }
 
-  renderPdf(resumePath, pdfPath, theme);
+  await measurer.renderPdf(htmlPath, pdfPath);
   const pages = await getPdfPageCount(pdfPath);
   if (pages !== 1) {
     throw new Error(

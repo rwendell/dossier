@@ -26,8 +26,9 @@ Requirements:
 
 - Node.js 20+
 - `opencode` on `PATH` for model calls
-- Chrome for Upwork page/profile fetching (Puppeteer downloads one)
+- Chrome for rendering and Upwork page/profile fetching (Puppeteer downloads one)
 - `gh` only when GitHub sync is added later
+- a system serif font, or let `dossier` download a fallback (see below)
 
 ## Data layout
 
@@ -45,6 +46,7 @@ Requirements:
   freelance/profile-*.json     # cached public freelance profile
   github.json                  # synced GitHub/org repos
   local-projects.json          # scanned ~/projects
+  fonts/                       # fallback serif, downloaded on demand
 
 ~/.local/state/dossier/logs/
   *.prompt.txt                 # --debug prompts
@@ -193,6 +195,26 @@ Tailoring never fetches a freelance profile on its own. Identity, contact
 details, and location come from `career.yml` and `career.private.yml`. Pass
 `--profile <url>` only when you explicitly want to enrich the basics from a
 public profile.
+
+### PDF fonts
+
+Themes ask for a specific font family. On a minimal Linux install (or a fresh
+WSL image) fontconfig can resolve even `serif` to a symbol font, which makes
+every PDF render as Greek/symbol glyphs. Dossier checks the rendered font and,
+when it resolves to a symbol font, downloads a metric-compatible serif
+(Tinos, OFL) into `~/.cache/dossier/fonts` once and uses it for the PDF.
+
+```bash
+dossier fonts              # show the system font and fallback status
+dossier fonts --install    # download the fallback now
+dossier fonts --force      # download it again
+```
+
+Installing a real serif font is preferable and keeps the theme's intended look:
+
+```bash
+sudo apt install fonts-liberation   # Debian/Ubuntu/WSL
+```
 
 Outputs default to the current directory:
 

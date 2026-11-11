@@ -1,5 +1,6 @@
 import type { CommandModule } from 'yargs';
 import { loadConfig } from '../../config/config.js';
+import { getFontDir } from '../../resume/fonts.js';
 import {
   careerFile,
   configDir,
@@ -47,6 +48,7 @@ export const pathsCommand: CommandModule<object, PathsArgs> = {
       cache: getCacheDir(),
       state: stateDir,
       logs: getLogDir(),
+      fonts: getFontDir(),
       runtime: getRuntimeDir(),
       profileCache: getProfileCacheDir(),
       career: careerFile,
