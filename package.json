@@ -21,16 +21,26 @@
     "dev": "tsx src/cli/index.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json",
-    "prepack": "aube run build"
+    "prepack": "aube run build",
+    "prepublishOnly": "aube run typecheck && aube run test"
   },
   "keywords": [
     "resume",
     "json-resume",
     "upwork",
     "proposal",
+    "freelance",
     "opencode"
   ],
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rwendell/dossier.git"
+  },
+  "homepage": "https://github.com/rwendell/dossier#readme",
+  "bugs": {
+    "url": "https://github.com/rwendell/dossier/issues"
+  },
   "publishConfig": {
     "access": "public"
   },
