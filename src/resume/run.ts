@@ -15,7 +15,7 @@ import {
 } from '../config/paths.js';
 import { readJobInput } from '../job/input.js';
 import type { Job } from '../job/types.js';
-import { ensureAgents, reloadOpencode } from '../llm/agents.js';
+import { prepareAgents } from '../llm/agents.js';
 import { LlmError, runAgent } from '../llm/providers.js';
 import {
   hasProjectCache,
@@ -23,6 +23,7 @@ import {
 } from '../projects/store.js';
 import { slugify } from '../util/slug.js';
 import { openFile } from '../util/open-file.js';
+import { writeRunLog } from '../util/run-log.js';
 import {
   applyProfileToCareer,
   loadUpworkProfile,
@@ -197,11 +198,10 @@ export async function runTailor(options: TailorRunOptions): Promise<void> {
   );
 
   if (options.debug) {
-    writeFileSync(`${base}.prompt.txt`, prompt);
+    writeRunLog(base, '.prompt.txt', prompt);
   }
 
-  ensureAgents();
-  reloadOpencode();
+  prepareAgents();
 
   let generated;
   try {
@@ -235,13 +235,12 @@ export async function runTailor(options: TailorRunOptions): Promise<void> {
     });
   } catch (error) {
     const raw = error instanceof LlmError ? error.raw : '';
-    if (raw || options.debug) {
-      writeFileSync(`${base}.opencode-output.jsonl`, raw);
-    }
+    const logPath =
+      raw || options.debug
+        ? writeRunLog(base, '.opencode-output.jsonl', raw)
+        : null;
     if (!(error instanceof LlmError)) throw error;
-    const saved = raw
-      ? ` Raw output saved to ${base}.opencode-output.jsonl.`
-      : '';
+    const saved = logPath ? ` Raw output saved to ${logPath}.` : '';
     throw new Error(`${error.message}${saved}`);
   }
 
@@ -277,12 +276,16 @@ export async function runTailor(options: TailorRunOptions): Promise<void> {
     candidates,
   });
   if (initialVerification.errors.length > 0) {
-    writeFileSync(`${base}.opencode-output.jsonl`, generated.raw || '');
+    const logPath = writeRunLog(
+      base,
+      '.opencode-output.jsonl',
+      generated.raw || '',
+    );
     for (const error of initialVerification.errors) {
       console.error(`  error: ${error}`);
     }
     throw new Error(
-      `Resume failed verification. Files are preserved at ${resumePath} and ${tracePath}.`,
+      `Resume failed verification. Files are preserved at ${resumePath} and ${tracePath}. Raw output saved to ${logPath}.`,
     );
   }
 

@@ -101,6 +101,10 @@ export function getAgentsDir(): string {
   return join(getRuntimeDir(), '.opencode', 'agents');
 }
 
+export function getLogDir(): string {
+  return join(stateDir, 'logs');
+}
+
 export function getProfileCacheDir(): string {
   return join(getCacheDir(), 'freelance');
 }

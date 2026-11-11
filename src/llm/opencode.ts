@@ -1,4 +1,6 @@
 import { spawnSync } from 'node:child_process';
+import { reloadOpencode } from './agents.js';
+import { opencodeEnv } from './env.js';
 
 const MAX_BUFFER = 100 * 1024 * 1024;
 
@@ -26,6 +28,33 @@ export function runOpencode({
   timeout,
   cwd,
 }: RunOpencodeOptions): ReturnType<typeof spawnSync> {
+  const options = { prompt, agent, model, title, timeout, cwd };
+  let result = spawnOpencode(options);
+
+  // The OpenCode service caches a project's agent list. If it loaded this
+  // directory before the prompts were written, reload and retry. A run that
+  // fails this way never reached the model, so retrying costs nothing.
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    if (!agentMissing(result, agent)) return result;
+    reloadOpencode(cwd);
+    sleepSync(500 + attempt * 1000);
+    result = spawnOpencode(options);
+  }
+  return result;
+}
+
+export function sleepSync(ms: number): void {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+}
+
+function spawnOpencode({
+  prompt,
+  agent,
+  model,
+  title,
+  timeout,
+  cwd,
+}: RunOpencodeOptions): ReturnType<typeof spawnSync> {
   const args = ['run', '--agent', agent, '--format', 'json'];
   if (title) args.push('--title', title);
   if (model) args.push('--model', model);
@@ -33,10 +62,23 @@ export function runOpencode({
 
   return spawnSync('opencode', args, {
     cwd,
+    env: opencodeEnv(cwd),
     encoding: 'utf8',
     maxBuffer: MAX_BUFFER,
     timeout,
   });
+}
+
+function agentMissing(
+  result: ReturnType<typeof spawnSync>,
+  agent: string,
+): boolean {
+  const output = `${result.stdout ?? ''}${result.stderr ?? ''}`;
+  if (!output) return false;
+  return (
+    output.includes('AgentNotFoundError') ||
+    output.includes(`Agent not found: "${agent}"`)
+  );
 }
 
 export function parseOpencodeStats(stdout: string): OpencodeStats | null {

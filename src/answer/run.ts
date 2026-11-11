@@ -19,7 +19,7 @@ import {
   type AnswerOutput,
 } from '../evidence/verify.js';
 import { readJobInput } from '../job/input.js';
-import { ensureAgents, reloadOpencode } from '../llm/agents.js';
+import { prepareAgents } from '../llm/agents.js';
 import { LlmError, runAgent } from '../llm/providers.js';
 import {
   hasProjectCache,
@@ -27,6 +27,7 @@ import {
 } from '../projects/store.js';
 import { findTailoredResume } from '../resume/find.js';
 import { slugify } from '../util/slug.js';
+import { writeRunLog } from '../util/run-log.js';
 import {
   applyProfileToCareer,
   loadUpworkProfile,
@@ -171,11 +172,10 @@ export async function runAnswer(options: AnswerRunOptions): Promise<void> {
   console.log(`dossier: output ${displayPath(markdownPath)}`);
 
   if (options.debug) {
-    writeFileSync(`${base}.prompt.txt`, prompt);
+    writeRunLog(base, '.prompt.txt', prompt);
   }
 
-  ensureAgents();
-  reloadOpencode();
+  prepareAgents();
   let generated;
   try {
     generated = runAgent({
@@ -200,13 +200,12 @@ export async function runAnswer(options: AnswerRunOptions): Promise<void> {
     });
   } catch (error) {
     const raw = error instanceof LlmError ? error.raw : '';
-    if (raw || options.debug) {
-      writeFileSync(`${base}.opencode-output.jsonl`, raw);
-    }
+    const logPath =
+      raw || options.debug
+        ? writeRunLog(base, '.opencode-output.jsonl', raw)
+        : null;
     if (!(error instanceof LlmError)) throw error;
-    const saved = raw
-      ? ` Raw output saved to ${base}.opencode-output.jsonl.`
-      : '';
+    const saved = logPath ? ` Raw output saved to ${logPath}.` : '';
     throw new Error(`${error.message}${saved}`);
   }
 
@@ -230,7 +229,11 @@ export async function runAnswer(options: AnswerRunOptions): Promise<void> {
   });
 
   if (verification.errors.length > 0) {
-    writeFileSync(`${base}.opencode-output.jsonl`, generated.raw || '');
+    const logPath = writeRunLog(
+      base,
+      '.opencode-output.jsonl',
+      generated.raw || '',
+    );
     for (const error of verification.errors) {
       console.error(`  error: ${error}`);
     }
@@ -238,13 +241,13 @@ export async function runAnswer(options: AnswerRunOptions): Promise<void> {
       console.error(`  warning: ${warning}`);
     }
     throw new Error(
-      `Answer failed verification. Raw output saved to ${base}.opencode-output.jsonl.`,
+      `Answer failed verification. Raw output saved to ${logPath}.`,
     );
   }
 
   if (options.debug) {
-    writeFileSync(`${base}.prompt.txt`, prompt);
-    writeFileSync(`${base}.opencode-output.jsonl`, generated.raw || '');
+    writeRunLog(base, '.prompt.txt', prompt);
+    writeRunLog(base, '.opencode-output.jsonl', generated.raw || '');
   }
 
   const answer = output.answer.trim();
