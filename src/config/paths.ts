@@ -88,8 +88,9 @@ export const stateDir = process.env.DOSSIER_STATE_HOME
 
 export const careerFile = join(dataDir, 'career.yml');
 export const privateCareerFile = join(dataDir, 'career.private.yml');
-export const proposalFile = join(dataDir, 'proposal.yml');
-export const legacyProposalFile = join(dataDir, 'upwork.yml');
+export const freelanceFile = join(dataDir, 'freelance.yml');
+export const legacyProposalFile = join(dataDir, 'proposal.yml');
+export const legacyUpworkFile = join(dataDir, 'upwork.yml');
 export const configFile = join(configDir, 'config.yml');
 
 export function getRuntimeDir(): string {
@@ -101,7 +102,7 @@ export function getAgentsDir(): string {
 }
 
 export function getProfileCacheDir(): string {
-  return join(getCacheDir(), 'upwork');
+  return join(getCacheDir(), 'freelance');
 }
 
 export function getGithubCacheFile(): string {

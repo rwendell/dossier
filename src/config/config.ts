@@ -15,8 +15,9 @@ export const ConfigSchema = z
     output: z
       .object({
         dir: z.string().default(''),
+        open: z.boolean().default(true),
       })
-      .default({ dir: '' }),
+      .default({ dir: '', open: true }),
     cache: z
       .object({
         mode: z.enum(['auto', 'dev', 'release']).default('auto'),
@@ -66,6 +67,8 @@ export function formatConfig(config: Config): string {
 output:
   # Empty means the current working directory.
   dir: ""
+  # Open the generated PDF when tailoring finishes.
+  open: ${config.output.open}
 
 cache:
   # auto | dev | release

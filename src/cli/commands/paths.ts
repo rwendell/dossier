@@ -10,7 +10,7 @@ import {
   getCacheSource,
   getProfileCacheDir,
   getRuntimeDir,
-  proposalFile,
+  freelanceFile,
   resolveOutputDir,
   stateDir,
 } from '../../config/paths.js';
@@ -48,7 +48,7 @@ export const pathsCommand: CommandModule<object, PathsArgs> = {
       runtime: getRuntimeDir(),
       profileCache: getProfileCacheDir(),
       career: careerFile,
-      proposal: proposalFile,
+      freelance: freelanceFile,
       output,
     };
 

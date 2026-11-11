@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildProposalSettings,
   extractRequiredOpening,
-  ProposalConfigSchema,
+  FreelanceConfigSchema,
 } from '../src/upwork/settings.js';
 
 const profile = {
@@ -13,7 +13,7 @@ const profile = {
 
 describe('proposal settings precedence', () => {
   it('uses the public profile rate when YAML leaves it null', () => {
-    const config = ProposalConfigSchema.parse({});
+    const config = FreelanceConfigSchema.parse({});
     const settings = buildProposalSettings(config, {}, profile);
     expect(settings.rate).toEqual({
       type: 'hourly',
@@ -24,7 +24,7 @@ describe('proposal settings precedence', () => {
   });
 
   it('lets YAML override the profile', () => {
-    const config = ProposalConfigSchema.parse({
+    const config = FreelanceConfigSchema.parse({
       rate: { amount: 85, currency: 'USD' },
       availability: '20-30 hrs/week',
       preferredSamples: ['nt-kafka'],
@@ -36,7 +36,7 @@ describe('proposal settings precedence', () => {
   });
 
   it('lets CLI flags override YAML and profile', () => {
-    const config = ProposalConfigSchema.parse({
+    const config = FreelanceConfigSchema.parse({
       rate: { amount: 85 },
       availability: '20-30 hrs/week',
     });

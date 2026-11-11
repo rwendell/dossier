@@ -1,6 +1,6 @@
-# Dossier Upwork proposal defaults.
+# Dossier freelance proposal defaults.
 #
-# Copy this file to ~/.local/share/dossier/proposal.yml and edit it. CLI flags
+# Copy this file to ~/.local/share/dossier/freelance.yml and edit it. CLI flags
 # override these values.
 
 # Public Upwork profile. When set, public values fill name, title, location,

@@ -21,11 +21,12 @@ import {
   loadCandidates,
 } from '../projects/store.js';
 import { slugify } from '../util/slug.js';
+import { openFile } from '../util/open-file.js';
 import {
   applyProfileToCareer,
   loadUpworkProfile,
 } from '../upwork/profile.js';
-import { loadProposalConfig } from '../upwork/settings.js';
+import { loadFreelanceConfig } from '../upwork/settings.js';
 import { applyBasicsUrlPolicy } from './basics.js';
 import {
   normalizeNumberSpacing,
@@ -69,17 +70,18 @@ export interface TailorRunOptions {
   timeout?: number;
   refresh?: boolean;
   noRender?: boolean;
+  open?: boolean;
   debug?: boolean;
 }
 
 export async function runTailor(options: TailorRunOptions): Promise<void> {
   const { config } = loadConfig();
-  const { config: proposalConfig } = loadProposalConfig();
+  const { config: freelanceConfig } = loadFreelanceConfig();
 
   const configuredProfileUrl =
-    typeof proposalConfig.profile === 'string'
-      ? proposalConfig.profile
-      : proposalConfig.profile?.url;
+    typeof freelanceConfig.profile === 'string'
+      ? freelanceConfig.profile
+      : freelanceConfig.profile?.url;
   const profileUrl =
     options.profile ||
     (!options.noProfile ? configuredProfileUrl : '') ||
@@ -292,6 +294,15 @@ export async function runTailor(options: TailorRunOptions): Promise<void> {
   if (finalVerification.gaps.length > 0) {
     console.log('dossier: gaps:');
     for (const gap of finalVerification.gaps) console.log(`  - ${gap}`);
+  }
+
+  const shouldOpen = options.open ?? config.output.open;
+  if (!options.noRender && shouldOpen) {
+    if (!openFile(pdfPath)) {
+      console.warn(
+        `dossier: could not open the PDF preview. Open ${pdfPath} manually or pass --no-open.`,
+      );
+    }
   }
 }
 

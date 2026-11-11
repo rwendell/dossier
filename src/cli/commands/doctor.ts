@@ -13,10 +13,10 @@ import {
   getLocalProjectsCacheFile,
   opencodeAgentsDir,
   privateCareerFile,
-  proposalFile,
+  freelanceFile,
 } from '../../config/paths.js';
 import { loadConfig } from '../../config/config.js';
-import { loadProposalConfig } from '../../upwork/settings.js';
+import { loadFreelanceConfig } from '../../upwork/settings.js';
 
 export const doctorCommand: CommandModule = {
   command: 'doctor',
@@ -50,7 +50,7 @@ export const doctorCommand: CommandModule = {
       privateCareerFile,
       false,
     );
-    check('proposal.yml', existsSync(proposalFile), proposalFile, true);
+    check('freelance.yml', existsSync(freelanceFile), freelanceFile, true);
     check('cache dir', existsSync(cacheDir), cacheDir, false);
     const projectCache =
       existsSync(githubCacheFile) || existsSync(localProjectsCacheFile);
@@ -106,10 +106,10 @@ export const doctorCommand: CommandModule = {
     console.log(
       `${'info'.padEnd(8)} ${'cache mode'.padEnd(18)} ${getCacheMode()} (${getCacheSource()})`,
     );
-    const proposal = loadProposalConfig();
+    const freelance = loadFreelanceConfig();
     console.log(
-      `${'info'.padEnd(8)} ${'proposal config'.padEnd(18)} ${
-        proposal.path ?? 'using built-in defaults'
+      `${'info'.padEnd(8)} ${'freelance config'.padEnd(18)} ${
+        freelance.path ?? 'using built-in defaults'
       }`,
     );
 

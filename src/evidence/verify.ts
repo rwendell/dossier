@@ -328,7 +328,7 @@ export function verifyProposal({
       const configuredRate = settings.rate;
       if (!configuredRate) {
         errors.push(
-          'rate is set but no rate was provided in proposal.yml or with --rate',
+          'rate is set but no rate was provided in freelance.yml or with --rate',
         );
       } else if (
         Number(output.rate.amount) !== Number(configuredRate.amount) ||
@@ -350,7 +350,7 @@ export function verifyProposal({
     const jobTimeline = `${job.body}\n${JSON.stringify(job.details ?? {})}`.toLowerCase();
     if (!jobTimeline.includes(timelineText)) {
       errors.push(
-        'timeline is set but no timeline was provided with --timeline, proposal.yml, or the job description',
+        'timeline is set but no timeline was provided with --timeline, freelance.yml, or the job description',
       );
     }
   }
@@ -363,7 +363,7 @@ export function verifyProposal({
     !String(hint ?? '').trim()
   ) {
     errors.push(
-      'availability is set but no availability was provided in proposal.yml, --availability, --client, or --hint',
+      'availability is set but no availability was provided in freelance.yml, --availability, --client, or --hint',
     );
   }
 

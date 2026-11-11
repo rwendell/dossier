@@ -17,6 +17,8 @@ interface TailorArgs {
   timeout?: number;
   refresh?: boolean;
   noRender?: boolean;
+  open?: boolean;
+  noOpen?: boolean;
   debug?: boolean;
 }
 
@@ -43,7 +45,7 @@ export const tailorCommand: CommandModule<object, TailorArgs> = {
       })
       .option('no-profile', {
         type: 'boolean',
-        describe: 'Ignore profile.url from proposal.yml',
+        describe: 'Ignore profile.url from freelance.yml',
         default: false,
       })
       .option('theme', {
@@ -89,6 +91,16 @@ export const tailorCommand: CommandModule<object, TailorArgs> = {
         describe: 'Write JSON/trace only; skip PDF rendering',
         default: false,
       })
+      .option('open', {
+        type: 'boolean',
+        describe: 'Open the rendered PDF when finished',
+        default: true,
+      })
+      .option('no-open', {
+        type: 'boolean',
+        describe: 'Do not open the rendered PDF',
+        default: false,
+      })
       .option('debug', {
         type: 'boolean',
         describe: 'Save the prompt and raw OpenCode output',
@@ -112,6 +124,7 @@ export const tailorCommand: CommandModule<object, TailorArgs> = {
         argv.timeout != null ? Number(argv.timeout) * 1000 : undefined,
       refresh: argv.refresh,
       noRender: argv.noRender,
+      open: argv.noOpen ? false : argv.open,
       debug: argv.debug,
     });
   },

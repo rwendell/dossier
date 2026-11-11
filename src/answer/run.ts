@@ -33,7 +33,7 @@ import {
   mapProfilePortfolio,
   type UpworkProfile,
 } from '../upwork/profile.js';
-import { loadProposalConfig } from '../upwork/settings.js';
+import { loadFreelanceConfig } from '../upwork/settings.js';
 import { buildAnswerPrompt } from './prompt.js';
 
 export interface AnswerRunOptions {
@@ -59,7 +59,7 @@ export interface AnswerRunOptions {
 
 export async function runAnswer(options: AnswerRunOptions): Promise<void> {
   const { config } = loadConfig();
-  const { config: proposalConfig } = loadProposalConfig();
+  const { config: freelanceConfig } = loadFreelanceConfig();
 
   const question = readTextInput(options.question);
   if (!question) {
@@ -67,9 +67,9 @@ export async function runAnswer(options: AnswerRunOptions): Promise<void> {
   }
 
   const configuredProfileUrl =
-    typeof proposalConfig.profile === 'string'
-      ? proposalConfig.profile
-      : proposalConfig.profile?.url;
+    typeof freelanceConfig.profile === 'string'
+      ? freelanceConfig.profile
+      : freelanceConfig.profile?.url;
   const profileUrl =
     options.profile ||
     (!options.noProfile ? configuredProfileUrl : '') ||

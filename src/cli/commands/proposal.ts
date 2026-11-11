@@ -56,7 +56,7 @@ export const proposalCommand: CommandModule<object, ProposalArgs> = {
       })
       .option('no-profile', {
         type: 'boolean',
-        describe: 'Ignore profile.url from proposal.yml',
+        describe: 'Ignore profile.url from freelance.yml',
         default: false,
       })
       .option('question', {

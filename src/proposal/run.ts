@@ -32,7 +32,7 @@ import {
   describeBudget,
   extractRequiredOpening,
   formatRate,
-  loadProposalConfig,
+  loadFreelanceConfig,
   parseBudget,
   type ProposalSettings,
 } from '../upwork/settings.js';
@@ -70,13 +70,13 @@ export async function runProposal(
   options: ProposalRunOptions,
 ): Promise<void> {
   const { config } = loadConfig();
-  const { config: proposalConfig, path: proposalConfigPath } =
-    loadProposalConfig();
+  const { config: freelanceConfig, path: freelanceConfigPath } =
+    loadFreelanceConfig();
 
   const configuredProfileUrl =
-    typeof proposalConfig.profile === 'string'
-      ? proposalConfig.profile
-      : proposalConfig.profile?.url;
+    typeof freelanceConfig.profile === 'string'
+      ? freelanceConfig.profile
+      : freelanceConfig.profile?.url;
   const profileUrl =
     options.profile ||
     (!options.noProfile ? configuredProfileUrl : '') ||
@@ -102,7 +102,7 @@ export async function runProposal(
   if (profile) applyProfileToCareer(career, profile);
 
   const settings = buildProposalSettings(
-    proposalConfig,
+    freelanceConfig,
     {
       rate: options.rate,
       rateType: options.rateType,
@@ -148,8 +148,8 @@ export async function runProposal(
     profile.portfolio = mappedPortfolio.portfolio;
     profile.preferredSamples = mappedPortfolio.preferredSamples;
     if (
-      !Array.isArray(proposalConfig.preferredSamples) ||
-      proposalConfig.preferredSamples.length === 0
+      !Array.isArray(freelanceConfig.preferredSamples) ||
+      freelanceConfig.preferredSamples.length === 0
     ) {
       settings.preferredSamples = mappedPortfolio.preferredSamples;
     }
@@ -372,7 +372,7 @@ export async function runProposal(
         cost: generated.stats?.cost ?? 0,
         generatedAt: new Date().toISOString(),
         sources: {
-          proposal: proposalConfigPath,
+          freelance: freelanceConfigPath,
           profile: profile?.cachePath ?? null,
           resume: tailored?.resumePath ?? null,
           trace: tailored?.tracePath ?? null,

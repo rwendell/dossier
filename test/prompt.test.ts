@@ -4,7 +4,7 @@ import type { Job } from '../src/job/types.js';
 import { buildProposalPrompt } from '../src/proposal/prompt.js';
 import {
   buildProposalSettings,
-  ProposalConfigSchema,
+  FreelanceConfigSchema,
 } from '../src/upwork/settings.js';
 
 const career = CareerSchema.parse({
@@ -28,7 +28,7 @@ const job: Job = {
 };
 
 const settings = buildProposalSettings(
-  ProposalConfigSchema.parse({}),
+  FreelanceConfigSchema.parse({}),
   {},
   null,
 );

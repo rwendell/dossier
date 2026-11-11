@@ -2,8 +2,9 @@ import { existsSync, readFileSync } from 'node:fs';
 import { parse as parseYaml } from 'yaml';
 import { z } from 'zod';
 import {
+  freelanceFile,
   legacyProposalFile,
-  proposalFile,
+  legacyUpworkFile,
 } from '../config/paths.js';
 
 export const DEFAULT_BANNED_PHRASES = [
@@ -21,7 +22,7 @@ export const RateSchema = z.object({
   currency: z.string().default('USD'),
 });
 
-export const ProposalConfigSchema = z
+export const FreelanceConfigSchema = z
   .object({
     profile: z
       .union([
@@ -60,7 +61,7 @@ export const ProposalConfigSchema = z
   })
   .passthrough();
 
-export type ProposalConfig = z.infer<typeof ProposalConfigSchema>;
+export type FreelanceConfig = z.infer<typeof FreelanceConfigSchema>;
 export type ConfiguredRate = z.infer<typeof RateSchema>;
 
 export interface EffectiveRate {
@@ -69,24 +70,26 @@ export interface EffectiveRate {
   currency: string;
 }
 
-export interface LoadedProposalConfig {
-  config: ProposalConfig;
+export interface LoadedFreelanceConfig {
+  config: FreelanceConfig;
   path: string | null;
 }
 
-export function loadProposalConfig(): LoadedProposalConfig {
-  const path = existsSync(proposalFile)
-    ? proposalFile
+export function loadFreelanceConfig(): LoadedFreelanceConfig {
+  const path = existsSync(freelanceFile)
+    ? freelanceFile
     : existsSync(legacyProposalFile)
       ? legacyProposalFile
-      : null;
+      : existsSync(legacyUpworkFile)
+        ? legacyUpworkFile
+        : null;
 
   if (!path) {
-    return { config: ProposalConfigSchema.parse({}), path: null };
+    return { config: FreelanceConfigSchema.parse({}), path: null };
   }
 
   const raw = parseYaml(readFileSync(path, 'utf8')) ?? {};
-  return { config: ProposalConfigSchema.parse(raw), path };
+  return { config: FreelanceConfigSchema.parse(raw), path };
 }
 
 export interface ProfileDefaults {
@@ -124,7 +127,7 @@ export interface ProposalSettings {
 }
 
 export function buildProposalSettings(
-  config: ProposalConfig,
+  config: FreelanceConfig,
   opts: ProposalOptions = {},
   profile?: ProfileDefaults | null,
 ): ProposalSettings {

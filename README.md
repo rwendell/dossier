@@ -35,14 +35,14 @@ Requirements:
 ~/.local/share/dossier/
   career.yml
   career.private.yml
-  proposal.yml
+  freelance.yml
 
 ~/.config/dossier/
   config.yml
 
 ~/.cache/dossier/
   opencode/.opencode/agents/   # runtime agent prompts
-  upwork/profile-*.json        # cached public profile
+  freelance/profile-*.json     # cached public freelance profile
   github.json                  # synced GitHub/org repos
   local-projects.json          # scanned ~/projects
 
@@ -65,6 +65,7 @@ Machine config:
 # ~/.config/dossier/config.yml
 output:
   dir: ""               # empty = current directory
+  open: true            # open the tailored PDF when finished
 
 cache:
   mode: auto            # auto | dev | release
@@ -92,27 +93,60 @@ Publishing is intentionally not a dossier command. Generated JSON is written to
 the current directory; copy it into the `json-resume` checkout and let that repo
 build, validate, and publish.
 
-## Initialize or migrate
-
-Create empty templates:
+## Initialize
 
 ```bash
 dossier init
 ```
 
-`career.private.yml` is optional and is not created by `init`; create it
-yourself for name, contact details, and location, or migrate one with
-`--from`.
+This creates `career.yml`, `freelance.yml`, and `config.yml` from the example
+templates. `career.private.yml` is optional; add it yourself for name, contact
+details, and location, or import a JSON Resume.
 
-Migrate from an existing `json-resume` checkout:
+Import an existing JSON Resume file:
 
 ```bash
-dossier init --from ~/projects/json-resume
+dossier init --from ~/Documents/resume.json
+dossier init --from ~/Documents/resume.json --force
 ```
 
-This copies `data/career.yml`, `data/career.private.yml`, and `data/upwork.yml`
-to the XDG data directory, renaming `upwork.yml` to `proposal.yml`. Existing
-files are kept unless `--force` is passed.
+The import maps `basics`, `work`, `projects`, `skills`, and `education` into
+`career.yml`. Contact details and location go to `career.private.yml`. Existing
+files are not replaced unless `--force` is passed.
+
+Legacy `proposal.yml` and `upwork.yml` files are copied to `freelance.yml`
+automatically when `freelance.yml` does not exist.
+
+## Freelance defaults
+
+`freelance.yml` holds proposal defaults:
+
+```yaml
+profile:
+  url: "https://www.upwork.com/freelancers/~..."
+
+rate:
+  type: hourly
+  amount: 85
+  currency: USD
+
+minHourlyRate: 85
+availability: "20-30 hrs/week; UK overlap until 6pm GMT"
+timeline: ""
+
+proposal:
+  targetWords: 180
+  minWords: 120
+  maxWords: 260
+  maxChars: 5000
+  includeRate: false
+  includeAvailability: true
+
+preferredSamples: []
+```
+
+CLI flags override these values. The public profile supplies identity,
+location, rate, skills, and portfolio defaults when `profile.url` is set.
 
 ## Pull the private overlay
 
@@ -141,7 +175,9 @@ dossier tailor job.md --no-render   # JSON + trace only
 The PDF is rendered with `resumed` and the configured theme. It is measured in
 print layout and automatically trimmed (highlights, projects, skills, summary)
 until it fits on one page, then filled from unused fact-bank achievements when
-it is too sparse. Outputs default to the current directory:
+it is too sparse. The PDF opens when the run finishes. Disable that with
+`--no-open` or `--open=false`, or set `output.open: false` in `config.yml`.
+Outputs default to the current directory:
 
 ```text
 ./resume-<slug>.json
@@ -220,7 +256,7 @@ logged-in session and are rejected. If Upwork shows a Cloudflare check, save the
 job text to a file and pass that instead.
 
 The public profile is cached for 24 hours; `--refresh` fetches it again.
-`--no-profile` ignores `profile.url` from `proposal.yml`.
+`--no-profile` ignores `profile.url` from `freelance.yml`.
 
 ## Verify and clean
 
