@@ -3,6 +3,8 @@ import { join, resolve } from 'node:path';
 import { loadCareer } from '../career/load.js';
 import { loadConfig } from '../config/config.js';
 import { resolveOutputDir } from '../config/paths.js';
+import { loadAllCandidates } from '../projects/store.js';
+import { locateTrace } from '../resume/find.js';
 import { getPdfPageCount } from '../resume/render.js';
 import type { Resume, Trace } from '../resume/types.js';
 import { verifyTailoredResume } from '../resume/verify.js';
@@ -21,15 +23,22 @@ export async function runVerify(options: VerifyRunOptions): Promise<void> {
   const resume = JSON.parse(
     readFileSync(resolved.resumePath, 'utf8'),
   ) as Resume;
+  if (!resolved.tracePath) {
+    throw new Error(
+      `No trace found for ${resolved.resumePath}. Run \`dossier tailor\` again to regenerate it.`,
+    );
+  }
   const trace = JSON.parse(
     readFileSync(resolved.tracePath, 'utf8'),
   ) as Trace;
   const { career } = loadCareer();
+  const candidates = loadAllCandidates(career);
 
   const verification = await verifyTailoredResume({
     resume,
     trace,
     career,
+    candidates,
   });
 
   for (const warning of verification.warnings) {
@@ -65,32 +74,34 @@ export async function runVerify(options: VerifyRunOptions): Promise<void> {
 function resolveResumeFiles(
   input: string,
   outputDir: string,
-): { resumePath: string; tracePath: string; pdfPath: string | null } {
+): { resumePath: string; tracePath: string | null; pdfPath: string | null } {
   const direct = resolve(process.cwd(), input);
   if (existsSync(direct)) {
     if (direct.toLowerCase().endsWith('.pdf')) {
+      const resumePath = direct.replace(/\.pdf$/i, '.json');
       return {
-        resumePath: direct.replace(/\.pdf$/i, '.json'),
-        tracePath: direct.replace(/\.pdf$/i, '.trace.json'),
+        resumePath,
+        tracePath: locateTrace(resumePath),
         pdfPath: direct,
       };
     }
-    if (direct.toLowerCase().endsWith('.json')) {
-      const tracePath = direct.endsWith('.trace.json')
-        ? direct
-        : direct.replace(/\.json$/i, '.trace.json');
-      const resumePath = direct.endsWith('.trace.json')
-        ? direct.replace(/\.trace\.json$/i, '.json')
-        : direct;
+    if (direct.toLowerCase().endsWith('.trace.json')) {
       return {
-        resumePath,
-        tracePath,
-        pdfPath: resumePath.replace(/\.json$/i, '.pdf'),
+        resumePath: direct.replace(/\.trace\.json$/i, '.json'),
+        tracePath: direct,
+        pdfPath: direct.replace(/\.trace\.json$/i, '.pdf'),
+      };
+    }
+    if (direct.toLowerCase().endsWith('.json')) {
+      return {
+        resumePath: direct,
+        tracePath: locateTrace(direct),
+        pdfPath: direct.replace(/\.json$/i, '.pdf'),
       };
     }
     return {
       resumePath: join(direct, 'resume.json'),
-      tracePath: join(direct, 'trace.json'),
+      tracePath: locateTrace(join(direct, 'resume.json')),
       pdfPath: join(direct, 'resume.pdf'),
     };
   }
@@ -105,7 +116,7 @@ function resolveResumeFiles(
     if (!existsSync(resumePath)) continue;
     return {
       resumePath,
-      tracePath: resumePath.replace(/\.json$/i, '.trace.json'),
+      tracePath: locateTrace(resumePath),
       pdfPath: resumePath.replace(/\.json$/i, '.pdf'),
     };
   }

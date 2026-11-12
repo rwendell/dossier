@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync } from 'node:fs';
 import { homedir } from 'node:os';
-import { isAbsolute, join, resolve } from 'node:path';
+import { isAbsolute, basename, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import envPaths from 'env-paths';
 
@@ -100,6 +100,19 @@ export function getAgentsDir(): string {
 
 export function getLogDir(): string {
   return join(getCacheDir(), 'logs');
+}
+
+export function getTraceDir(): string {
+  return join(getCacheDir(), 'traces');
+}
+
+/**
+ * Provenance traces are keyed by the resume filename and kept in the cache, so
+ * they follow the resume around without landing in the user's directory.
+ */
+export function tracePathFor(resumePath: string): string {
+  const name = basename(resumePath).replace(/\.json$/i, '');
+  return join(getTraceDir(), `${name}.trace.json`);
 }
 
 export function getProfileCacheDir(): string {

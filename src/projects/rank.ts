@@ -24,14 +24,20 @@ export interface RankProjectsResult {
   selected: ProjectCandidate[];
 }
 
-export function rankProjects(
+type VisibleRepo =
+  | (GitHubData['repos'][number] & { source: string; evidence: string })
+  | (LocalProjectsData['projects'][number] & {
+      source: 'local';
+      evidence: string;
+      pushedAt?: string;
+    });
+
+function visibleRepos(
   github: GitHubData | null,
   local: LocalProjectsData | null,
   career: Career,
-  job: Job,
-  limit = 12,
-): RankProjectsResult {
-  const repos = [
+): VisibleRepo[] {
+  const repos: VisibleRepo[] = [
     ...(github?.repos ?? []).map((repo) => ({
       ...repo,
       source: repo.source || 'github',
@@ -49,11 +55,6 @@ export function rankProjects(
     })),
   ].filter((repo) => repo.included !== false);
 
-  const tokens = keywords(job.body || job.title);
-  if (repos.length === 0) {
-    return { tokens, scored: [], selected: [] };
-  }
-
   const curatedRepos = new Set(
     career.projects
       .map((project) => project.repo)
@@ -61,12 +62,39 @@ export function rankProjects(
       .map((repo) => String(repo).split('/').pop()!.toLowerCase()),
   );
 
+  return repos.filter(
+    (repo) =>
+      repo.source === 'local' || !curatedRepos.has(repo.name.toLowerCase()),
+  );
+}
+
+/**
+ * Every cached project, without ranking against a job. Used to validate
+ * evidence ids when verifying a resume after the fact.
+ */
+export function allProjectCandidates(
+  github: GitHubData | null,
+  local: LocalProjectsData | null,
+  career: Career,
+): ProjectCandidate[] {
+  return visibleRepos(github, local, career).map((repo) => toCandidate(repo));
+}
+
+export function rankProjects(
+  github: GitHubData | null,
+  local: LocalProjectsData | null,
+  career: Career,
+  job: Job,
+  limit = 12,
+): RankProjectsResult {
+  const repos = visibleRepos(github, local, career);
+
+  const tokens = keywords(job.body || job.title);
+  if (repos.length === 0) {
+    return { tokens, scored: [], selected: [] };
+  }
+
   const scored: ScoredProject[] = repos
-    .filter(
-      (repo) =>
-        repo.source === 'local' ||
-        !curatedRepos.has(repo.name.toLowerCase()),
-    )
     .map((repo) => {
       const strongHaystack = [
         repo.name,

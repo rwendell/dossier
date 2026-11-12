@@ -11,7 +11,9 @@ import {
   displayPath,
   getCacheDir,
   getRuntimeDir,
+  getTraceDir,
   resolveOutputDir,
+  tracePathFor,
 } from '../config/paths.js';
 import { readJobInput } from '../job/input.js';
 import type { Job } from '../job/types.js';
@@ -168,7 +170,8 @@ export async function runTailor(options: TailorRunOptions): Promise<void> {
     `resume-${slug}${nameSlug ? `.${nameSlug}` : ''}`,
   );
   const resumePath = `${base}.json`;
-  const tracePath = `${base}.trace.json`;
+  const tracePath = tracePathFor(resumePath);
+  mkdirSync(getTraceDir(), { recursive: true });
   const pdfPath = `${base}.pdf`;
   const workDir = resolve(getCacheDir(), 'tailor', slug);
   mkdirSync(workDir, { recursive: true });
@@ -329,7 +332,7 @@ export async function runTailor(options: TailorRunOptions): Promise<void> {
   }
 
   console.log(`dossier: saved ${displayPath(resumePath)}`);
-  console.log(`dossier: saved ${displayPath(tracePath)}`);
+  console.log(`dossier: trace ${tracePath}`);
   if (!options.noRender) {
     console.log(`dossier: saved ${displayPath(pdfPath)}`);
   }
