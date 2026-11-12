@@ -15,14 +15,14 @@ interface SyncArgs {
 }
 
 export const syncCommand: CommandModule<object, SyncArgs> = {
-  command: 'sync <target>',
-  describe: 'Sync GitHub/org and local project metadata into the cache',
+  command: 'sync [target]',
+  describe: 'Sync GitHub/org and local project metadata (default: all)',
   builder: (yargs) =>
     yargs
       .positional('target', {
         type: 'string',
         choices: ['github', 'local', 'all'] as const,
-        describe: 'What to sync',
+        describe: 'What to sync (default: all)',
       })
       .option('user', {
         type: 'string',
@@ -57,8 +57,8 @@ export const syncCommand: CommandModule<object, SyncArgs> = {
       }),
   handler: (argv) => {
     loadConfig();
-    if (!argv.target) throw new Error('Choose github, local, or all.');
-    if (argv.target === 'local') {
+    const target = argv.target ?? 'all';
+    if (target === 'local') {
       syncLocal({
         root: argv.root,
         readmeChars: argv.readmeChars,
@@ -72,7 +72,7 @@ export const syncCommand: CommandModule<object, SyncArgs> = {
       readmeChars: argv.readmeChars,
       publicOnly: argv.publicOnly,
       skipOrgs: argv.skipOrgs,
-      skipLocal: argv.target === 'github' ? argv.skipLocal : false,
+      skipLocal: target === 'github' ? argv.skipLocal : false,
     });
   },
 };

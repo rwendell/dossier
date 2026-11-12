@@ -235,6 +235,7 @@ Project candidates come from GitHub/org repos and local `~/projects` checkouts.
 Sync them into the cache:
 
 ```bash
+dossier sync          # same as `sync all`
 dossier sync github   # requires gh auth login
 dossier sync local    # scans ~/projects
 dossier sync all
