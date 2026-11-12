@@ -78,10 +78,11 @@ export function trimResume(
   }
 
   if (level >= 3 && resume.basics?.summary) {
-    const sentences =
-      resume.basics.summary.match(/[^.!?]+[.!?]+/g) ?? [
-        resume.basics.summary,
-      ];
+    // Split only on sentence-ending punctuation followed by whitespace, so
+    // decimals ("2.5M") and version numbers are not cut in half.
+    const sentences = resume.basics.summary
+      .split(/(?<=[.!?])\s+/)
+      .filter((sentence) => sentence.trim().length > 0);
     const shortened = sentences
       .slice(0, level >= 5 ? 1 : 2)
       .join(' ')

@@ -11,7 +11,6 @@ import { slugify } from '../util/slug.js';
 import { fetchRenderedHtml } from '../job/page.js';
 import type { EffectiveRate } from './settings.js';
 
-const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 
 const COUNTRY_CODES = new Map<string, string>([
   ['usa', 'US'],
@@ -100,9 +99,10 @@ export async function loadUpworkProfile(
     `profile-${profileIdFromUrl(url)}.json`,
   );
   const cached = readProfileCache(cachePath);
-  const fresh = cached && Date.now() - cached.fetchedAtMs < CACHE_TTL_MS;
 
-  if (!refresh && fresh) {
+  // A cached profile is reused indefinitely. Scraping is fragile, so only
+  // refresh on request (`--refresh`) or when there is nothing cached yet.
+  if (!refresh && cached) {
     log?.('using cached Upwork profile');
     return {
       ...cached.profile,

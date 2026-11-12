@@ -13,6 +13,7 @@ import {
   type ProposalOutput,
 } from '../evidence/verify.js';
 import { readJobInput } from '../job/input.js';
+import { saveLastJob } from '../job/last.js';
 import { prepareAgents } from '../llm/agents.js';
 import { LlmError, runAgent } from '../llm/providers.js';
 import {
@@ -132,6 +133,7 @@ export async function runProposal(
       'Could not determine a job title. Pass --title, or use a job URL/file with a title.',
     );
   }
+  saveLastJob(job);
 
   const slug =
     slugify([job.company, job.title].filter(Boolean).join(' ')) ||

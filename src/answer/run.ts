@@ -19,6 +19,8 @@ import {
   type AnswerOutput,
 } from '../evidence/verify.js';
 import { readJobInput } from '../job/input.js';
+import { loadLastJob } from '../job/last.js';
+import type { Job } from '../job/types.js';
 import { prepareAgents } from '../llm/agents.js';
 import { LlmError, runAgent } from '../llm/providers.js';
 import {
@@ -34,7 +36,6 @@ import {
   mapProfilePortfolio,
   type UpworkProfile,
 } from '../upwork/profile.js';
-import { loadFreelanceConfig } from '../upwork/settings.js';
 import { buildAnswerPrompt } from './prompt.js';
 
 export interface AnswerRunOptions {
@@ -47,7 +48,6 @@ export interface AnswerRunOptions {
   description?: string;
   client?: string;
   profile?: string;
-  noProfile?: boolean;
   question: string;
   hint?: string[];
   provider?: string;
@@ -60,36 +60,21 @@ export interface AnswerRunOptions {
 
 export async function runAnswer(options: AnswerRunOptions): Promise<void> {
   const { config } = loadConfig();
-  const { config: freelanceConfig } = loadFreelanceConfig();
 
   const question = readTextInput(options.question);
   if (!question) {
     throw new Error('Provide a question with -q "<text>" or -q question.txt.');
   }
 
-  const configuredProfileUrl =
-    typeof freelanceConfig.profile === 'string'
-      ? freelanceConfig.profile
-      : freelanceConfig.profile?.url;
-  const profileUrl =
-    options.profile ||
-    (!options.noProfile ? configuredProfileUrl : '') ||
-    '';
-
+  // Answers are not freelance-specific: only fetch a profile when one is
+  // passed explicitly.
   let profile: UpworkProfile | null = null;
-  if (profileUrl) {
-    try {
-      profile = await loadUpworkProfile(profileUrl, {
-        refresh: options.refresh,
-        log: (message) => console.log(`dossier: ${message}`),
-        warn: (message) => console.warn(`dossier: ${message}`),
-      });
-    } catch (error) {
-      if (options.profile) throw error;
-      console.warn(
-        `dossier: could not load configured Upwork profile: ${(error as Error).message}`,
-      );
-    }
+  if (options.profile) {
+    profile = await loadUpworkProfile(options.profile, {
+      refresh: options.refresh,
+      log: (message) => console.log(`dossier: ${message}`),
+      warn: (message) => console.warn(`dossier: ${message}`),
+    });
   }
 
   const { career } = loadCareer();
@@ -103,13 +88,7 @@ export async function runAnswer(options: AnswerRunOptions): Promise<void> {
   const hint = readHints(options.hint);
   const client = readTextInput(options.client);
 
-  const job = await readJobInput({
-    input: options.input,
-    title: options.title,
-    company: options.company,
-    url: options.url,
-    description: options.description,
-  });
+  const job = await resolveJob(options);
   if (!job.title) {
     throw new Error(
       'Could not determine a job title. Pass --title, or use a job URL/file with a title.',
@@ -361,4 +340,33 @@ function readTextInput(value: string | undefined): string {
 function truncate(value: string, length: number): string {
   const text = String(value).replace(/\s+/g, ' ').trim();
   return text.length > length ? `${text.slice(0, length - 1)}…` : text;
+}
+
+async function resolveJob(options: AnswerRunOptions): Promise<Job> {
+  const hasJobSource = Boolean(
+    options.input ||
+      options.description ||
+      options.url ||
+      options.title ||
+      options.company,
+  );
+  if (!hasJobSource) {
+    const last = loadLastJob();
+    if (!last) {
+      throw new Error(
+        'No job given and no recent job cached. Run `dossier tailor <job>` first, or pass a job URL/file.',
+      );
+    }
+    console.log(
+      `dossier: using last job ${last.company ? `${last.company} — ` : ''}${last.title}`,
+    );
+    return last;
+  }
+  return readJobInput({
+    input: options.input,
+    title: options.title,
+    company: options.company,
+    url: options.url,
+    description: options.description,
+  });
 }

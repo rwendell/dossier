@@ -49,6 +49,7 @@ Requirements:
   fonts/                       # fallback serif, downloaded on demand
   logs/                        # diagnostics, see below
   tailor/<slug>/               # scratch HTML used for PDF measurement
+  last-job.json                # most recent job, reused by `dossier answer`
   precursors/resume-*.json     # JSON Resume each PDF was rendered from
   traces/resume-*.trace.json   # evidence trace for each tailored resume
 ```
@@ -299,9 +300,16 @@ dossier proposal job.md --profile 'https://www.upwork.com/freelancers/~...'
 ## Answer an application question
 
 ```bash
-dossier answer job.md -q 'Why is this role a good fit?'
+dossier answer -q 'Why is this role a good fit?'        # uses the last job
+dossier answer 'Why is this role a good fit?'           # same, positional
+dossier answer job.md -q 'Why is this role a good fit?' # explicit job
 dossier answer job.md -q question.txt --hint 'Emphasize the Kafka work'
 ```
+
+With no job argument, `answer` reuses the most recent job from `dossier tailor`
+or `dossier proposal` (`<cache>/last-job.json`). With one positional and no
+`-q`, the positional is treated as the question. A positional that is a URL or
+an existing file is treated as the job source, so a question is required then.
 
 Answers are written to `./answer-<slug>.<question>.md` and `.json`, and copied
 to the clipboard by default.
@@ -324,8 +332,10 @@ modal URLs (`/nx/search/jobs/saved/details/...`) and search URLs need your
 logged-in session and are rejected. If Upwork shows a Cloudflare check, save the
 job text to a file and pass that instead.
 
-The public profile is cached for 24 hours; `--refresh` fetches it again.
-`--no-profile` ignores `profile.url` from `freelance.yml`.
+Only `proposal` reads a public profile, and only from `profile.url` in
+`freelance.yml` or an explicit `--profile`. The profile is cached indefinitely
+because scraping Upwork is fragile; `--refresh` fetches it again. `tailor` and
+`answer` never fetch one unless you pass `--profile` yourself.
 
 ## Verify and clean
 

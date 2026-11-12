@@ -106,6 +106,10 @@ export function getTraceDir(): string {
   return join(getCacheDir(), 'traces');
 }
 
+export function getLastJobFile(): string {
+  return join(getCacheDir(), 'last-job.json');
+}
+
 export function getPrecursorDir(): string {
   return join(getCacheDir(), 'precursors');
 }

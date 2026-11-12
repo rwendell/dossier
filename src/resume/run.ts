@@ -18,6 +18,7 @@ import {
   tracePathFor,
 } from '../config/paths.js';
 import { readJobInput } from '../job/input.js';
+import { saveLastJob } from '../job/last.js';
 import type { Job } from '../job/types.js';
 import { prepareAgents } from '../llm/agents.js';
 import { LlmError, runAgent } from '../llm/providers.js';
@@ -156,6 +157,7 @@ export async function runTailor(options: TailorRunOptions): Promise<void> {
       'Could not determine a job title. Pass --title, or use a job URL/file with a title.',
     );
   }
+  saveLastJob(job);
 
   const theme = options.theme || config.theme;
   const slug = generic

@@ -1,9 +1,11 @@
+import { existsSync } from 'node:fs';
+import { resolve } from 'node:path';
 import type { CommandModule } from 'yargs';
 import { runAnswer } from '../../answer/run.js';
 
 interface AnswerArgs {
   input?: string;
-  question: string;
+  question?: string;
   out?: string;
   name?: string;
   title?: string;
@@ -12,7 +14,6 @@ interface AnswerArgs {
   description?: string;
   client?: string;
   profile?: string;
-  noProfile?: boolean;
   hint?: string[];
   provider?: string;
   model?: string;
@@ -29,12 +30,12 @@ export const answerCommand: CommandModule<object, AnswerArgs> = {
     yargs
       .positional('input', {
         type: 'string',
-        describe: 'Job URL, job file, or job description',
+        describe:
+          'Question, or a job URL/file when --question is also given',
       })
       .option('question', {
         alias: 'q',
         type: 'string',
-        demandOption: true,
         describe: 'Question text or file',
       })
       .option('out', {
@@ -51,12 +52,7 @@ export const answerCommand: CommandModule<object, AnswerArgs> = {
       })
       .option('profile', {
         type: 'string',
-        describe: 'Public Upwork profile URL for defaults',
-      })
-      .option('no-profile', {
-        type: 'boolean',
-        describe: 'Ignore profile.url from freelance.yml',
-        default: false,
+        describe: 'Explicit public Upwork profile URL (opt-in)',
       })
       .option('hint', {
         alias: 'H',
@@ -109,9 +105,19 @@ export const answerCommand: CommandModule<object, AnswerArgs> = {
         default: false,
       }),
   handler: async (argv) => {
+    // With one positional and no --question, the positional is the question.
+    // Otherwise the positional is the job source.
+    const positionalIsQuestion =
+      !argv.question && argv.input && !looksLikeJobSource(argv.input);
+    if (!argv.question && argv.input && !positionalIsQuestion) {
+      throw new Error(
+        'Pass the question with -q "<text>" when the positional input is a job URL or file.',
+      );
+    }
+
     await runAnswer({
-      input: argv.input,
-      question: argv.question,
+      input: positionalIsQuestion ? undefined : argv.input,
+      question: argv.question ?? (positionalIsQuestion ? argv.input! : ''),
       out: argv.out,
       name: argv.name,
       title: argv.title,
@@ -120,7 +126,6 @@ export const answerCommand: CommandModule<object, AnswerArgs> = {
       description: argv.description,
       client: argv.client,
       profile: argv.profile,
-      noProfile: argv.noProfile,
       hint: argv.hint,
       provider: argv.provider,
       model: argv.model,
@@ -132,3 +137,8 @@ export const answerCommand: CommandModule<object, AnswerArgs> = {
     });
   },
 };
+
+function looksLikeJobSource(value: string): boolean {
+  if (/^https?:\/\//i.test(value)) return true;
+  return existsSync(resolve(process.cwd(), value));
+}

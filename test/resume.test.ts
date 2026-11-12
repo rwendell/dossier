@@ -167,6 +167,23 @@ describe('resume trace and one-page helpers', () => {
     expect(draftTrace.bullets).toHaveLength(6);
   });
 
+  it('keeps decimals intact when shortening the summary', () => {
+    const draft: Resume = {
+      ...structuredClone(resume),
+      basics: {
+        ...resume.basics,
+        summary:
+          'Full-stack engineer handling 2.5M daily transactions. Second sentence here. Third sentence.',
+      },
+    };
+    const draftTrace: Trace = { bullets: [] };
+
+    expect(trimResume(draft, draftTrace, 3)).toBe(true);
+    expect(draft.basics?.summary).toBe(
+      'Full-stack engineer handling 2.5M daily transactions. Second sentence here.',
+    );
+  });
+
   it('finds unused achievements by strength', () => {
     const unused = collectUnusedAchievements(career, trace);
     expect(unused).toHaveLength(1);
