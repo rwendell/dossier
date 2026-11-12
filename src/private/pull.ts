@@ -10,7 +10,6 @@ import { parse as parseYaml } from 'yaml';
 import { loadCareer } from '../career/load.js';
 import {
   careerFile,
-  configFile,
   freelanceFile,
   getCacheDir,
   privateCareerFile,
@@ -45,7 +44,6 @@ export function dataFiles(): DataFile[] {
     { name: 'career.private.yml', path: privateCareerFile },
     { name: 'career.yml', path: careerFile },
     { name: 'freelance.yml', path: freelanceFile },
-    { name: 'config.yml', path: configFile },
   ].filter((file) => extname(file.name) === '.yml');
 }
 

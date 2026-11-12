@@ -8,7 +8,6 @@ describe('pull-private targets', () => {
       'career.private.yml',
       'career.yml',
       'freelance.yml',
-      'config.yml',
     ]);
     for (const file of files) {
       expect(file.name.endsWith('.yml')).toBe(true);

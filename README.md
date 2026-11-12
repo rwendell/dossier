@@ -360,33 +360,40 @@ dossier --version
 dossier paths
 ```
 
-All four data files live in one secret gist:
+Settings and data are managed separately:
 
 ```text
-career.yml          # public facts: roles, achievements, projects, skills
-career.private.yml  # name, email, phone, location
-freelance.yml       # proposal defaults (rate, availability, profile URL)
-config.yml          # theme, provider, output and cache settings
+chezmoi              -> ~/.config/dossier/config.yml   (theme, provider, cache)
+secret gist          -> ~/.local/share/dossier/career.yml
+                        ~/.local/share/dossier/career.private.yml
+                        ~/.local/share/dossier/freelance.yml
 ```
 
 ```bash
+chezmoi apply                            # ~/.config/dossier/config.yml
 gh auth login
 CAREER_PRIVATE_GIST_ID=<id> dossier pull-private --all
 ```
 
 `pull-private` resolves the secret gist (`--gist`, the env var, or discovery by
-`career.private.yml`) and restores every YAML data file it contains:
+`career.private.yml`) and restores the YAML data files it contains:
 
 ```text
 career.private.yml -> ~/.local/share/dossier/
 career.yml         -> ~/.local/share/dossier/
 freelance.yml      -> ~/.local/share/dossier/
-config.yml         -> ~/.config/dossier/
 ```
 
 Only `.yml` files are pulled; notes or READMEs in the gist are ignored. Without
 `--all` it pulls just the PII overlay. Changed local files are backed up under
 `<cache>/pull-private/` before being replaced.
+
+`config.yml` is intentionally not in the gist: it is tracked by chezmoi, so the
+gist and chezmoi never fight over the same file. Re-add it after local edits:
+
+```bash
+chezmoi add ~/.config/dossier/config.yml
+```
 
 Keep the gist ID out of this repository: a secret gist is readable by anyone
 who has the URL. Set `CAREER_PRIVATE_GIST_ID` in your shell instead.

@@ -31,7 +31,7 @@ export const pullPrivateCommand: CommandModule<object, PullPrivateArgs> = {
       .option('all', {
         type: 'boolean',
         describe:
-          'Also pull career.yml, freelance.yml, and config.yml from the same gist',
+          'Also pull career.yml and freelance.yml from the same gist',
         default: false,
       }),
   handler: (argv) => {
