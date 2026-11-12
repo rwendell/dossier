@@ -167,21 +167,18 @@ preferredSamples: []
 CLI flags override these values. The public profile supplies identity,
 location, rate, skills, and portfolio defaults when `profile.url` is set.
 
-## Pull the private overlay
+## Restore the private overlay
 
-Keep `career.private.yml` in a secret GitHub gist and pull it down on another
-machine:
+`career.private.yml` lives in a secret GitHub gist. Restore it manually; dossier
+never talks to gists itself:
 
 ```bash
-dossier pull-private
-dossier pull-private --gist <id|url>
-CAREER_PRIVATE_GIST_ID=<id> dossier pull-private
+GIST=<id>
+gh gist view $GIST -f career.private.yml --raw > ~/.local/share/dossier/career.private.yml
 ```
 
-Resolution order: `--gist`, `CAREER_PRIVATE_GIST_ID`, then auto-discovery of a
-secret gist containing `career.private.yml`. Public gists are refused unless
-`--allow-public` is passed. A changed local file is backed up under
-`<cache>/pull-private/`.
+The gist stays out of this repository: a secret gist is readable by anyone who
+has the URL.
 
 ## Tailor a resume
 
@@ -370,33 +367,25 @@ secret gist          -> ~/.local/share/dossier/career.yml
 ```
 
 ```bash
-chezmoi apply                            # ~/.config/dossier/config.yml
+chezmoi apply   # ~/.config/dossier/config.yml
 gh auth login
-CAREER_PRIVATE_GIST_ID=<id> dossier pull-private --all
+
+# data files live in one secret gist
+GIST=<id>
+gh gist view $GIST -f career.yml --raw > ~/.local/share/dossier/career.yml
+gh gist view $GIST -f career.private.yml --raw > ~/.local/share/dossier/career.private.yml
+gh gist view $GIST -f freelance.yml --raw > ~/.local/share/dossier/freelance.yml
 ```
 
-`pull-private` resolves the secret gist (`--gist`, the env var, or discovery by
-`career.private.yml`) and restores the YAML data files it contains:
-
-```text
-career.private.yml -> ~/.local/share/dossier/
-career.yml         -> ~/.local/share/dossier/
-freelance.yml      -> ~/.local/share/dossier/
-```
-
-Only `.yml` files are pulled; notes or READMEs in the gist are ignored. Without
-`--all` it pulls just the PII overlay. Changed local files are backed up under
-`<cache>/pull-private/` before being replaced.
-
-`config.yml` is intentionally not in the gist: it is tracked by chezmoi, so the
-gist and chezmoi never fight over the same file. Re-add it after local edits:
+`config.yml` is intentionally not in the gist: chezmoi owns it, so the gist and
+chezmoi never fight over the same file. Re-add it after local edits:
 
 ```bash
 chezmoi add ~/.config/dossier/config.yml
 ```
 
 Keep the gist ID out of this repository: a secret gist is readable by anyone
-who has the URL. Set `CAREER_PRIVATE_GIST_ID` in your shell instead.
+who has the URL.
 
 Without a gist, rebuild from scratch:
 
@@ -468,7 +457,6 @@ v0.1 implements:
 - keyword candidate ranking used by proposal/answer/tailor
 - automatic reuse of a matching tailored resume/trace in proposal/answer
 - `score` to explain candidate ranking
-- `pull-private` for the secret PII gist
 - `clean` for the regenerable cache
 
 Next improvements:
