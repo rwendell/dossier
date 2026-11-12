@@ -347,7 +347,76 @@ dossier clean
 ```
 
 `verify` checks JSON Resume schema, trace coverage, evidence ids, dates, numbers,
-excluded skills, and the PDF page count. `clean` removes the regenerable cache.
+excluded skills, and the PDF page count. It resolves the cached JSON Resume and
+trace from `<cache>/precursors` and `<cache>/traces`, so a PDF alone is enough.
+`clean` removes the regenerable cache.
+
+## Onboard a new device
+
+```bash
+# 1. Tools: aube, Node 20+, opencode (authenticated), gh (gh auth login)
+aube add -g @rwendell/dossier
+dossier --version
+dossier paths
+```
+
+Restore the data directory (`~/.local/share/dossier`) and config
+(`~/.config/dossier/config.yml`). There are three files:
+
+```text
+career.yml          # public facts: roles, achievements, projects, skills
+career.private.yml  # name, email, phone, location (optional but recommended)
+freelance.yml       # proposal defaults (rate, availability, profile URL)
+```
+
+The PII overlay has built-in sync:
+
+```bash
+gh auth login
+dossier pull-private            # secret gist containing career.private.yml
+```
+
+`career.yml`, `freelance.yml`, and `config.yml` are not synced automatically.
+Copy them from the old machine (`scp`, USB, or a private repo), or rebuild them:
+
+```bash
+dossier init                                  # example templates
+dossier init --from ~/Documents/resume.json   # import a JSON Resume
+```
+
+Then fill in `freelance.yml` and run:
+
+```bash
+dossier sync            # GitHub/org repos + local ~/projects
+dossier fonts --install # only if the system has no serif font
+dossier doctor          # everything should be ok
+```
+
+Bring the site repo over separately:
+
+```bash
+git clone git@github.com:rwendell/json-resume.git
+cd json-resume
+aube ci
+aube exec --no-install -- puppeteer browsers install chrome
+aube run validate -- all
+aube run build
+```
+
+Publish a tailored resume from the precursor cache:
+
+```bash
+aube run publish -- ~/.cache/dossier/precursors/resume-<slug>.json --name my-resume
+```
+
+Secrets to recreate on a new device or repo:
+
+| Secret | Where | Used for |
+| --- | --- | --- |
+| `gh auth login` | device | gist sync, GitHub repo sync |
+| `opencode auth` | device | model calls |
+| `NPM_TOKEN` | dossier repo secret | `v*` tag releases |
+| `GIST_TOKEN` | json-resume repo secret | mirroring published JSON to the gist |
 
 ## Inspect paths and health
 
