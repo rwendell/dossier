@@ -37,6 +37,7 @@ Requirements:
   career.yml
   career.private.yml
   freelance.yml
+  examples/                    # bundled examples, installed by `dossier init`
 
 ~/.config/dossier/
   config.yml
@@ -112,17 +113,38 @@ Publishing is intentionally not a dossier command. Generated JSON is written to
 the current directory; copy it into the `json-resume` checkout and let that repo
 build, validate, and publish.
 
-## Initialize
+## Files and examples
+
+```text
+~/.local/share/dossier/
+  career.yml           # public facts: roles, achievements, projects, skills
+  career.private.yml   # name, email, phone, location (optional)
+  freelance.yml        # proposal defaults: rate, availability, profile URL
+  examples/            # copies of the bundled examples below
+
+~/.config/dossier/
+  config.yml           # theme, provider, output and cache settings
+```
+
+Create the files from the examples:
 
 ```bash
 dossier init
 ```
 
-This creates `career.yml`, `freelance.yml`, and `config.yml` from the example
-templates. `career.private.yml` is optional; add it yourself for name, contact
-details, and location, or import a JSON Resume.
+The examples are installed to `~/.local/share/dossier/examples/` and are safe to
+re-read or copy from at any time:
 
-Import an existing JSON Resume file:
+```text
+career.example.yml
+career.private.example.yml
+freelance.example.yml
+config.example.yml
+```
+
+`dossier init` never overwrites existing files unless `--force` is passed.
+
+Import an existing JSON Resume into the fact bank:
 
 ```bash
 dossier init --from ~/Documents/resume.json
@@ -130,8 +152,7 @@ dossier init --from ~/Documents/resume.json --force
 ```
 
 The import maps `basics`, `work`, `projects`, `skills`, and `education` into
-`career.yml`. Contact details and location go to `career.private.yml`. Existing
-files are not replaced unless `--force` is passed.
+`career.yml`. Contact details and location go to `career.private.yml`.
 
 Legacy `proposal.yml` and `upwork.yml` files are copied to `freelance.yml`
 automatically when `freelance.yml` does not exist.
@@ -166,19 +187,6 @@ preferredSamples: []
 
 CLI flags override these values. The public profile supplies identity,
 location, rate, skills, and portfolio defaults when `profile.url` is set.
-
-## Restore the private overlay
-
-`career.private.yml` lives in a secret GitHub gist. Restore it manually; dossier
-never talks to gists itself:
-
-```bash
-GIST=<id>
-gh gist view $GIST -f career.private.yml --raw > ~/.local/share/dossier/career.private.yml
-```
-
-The gist stays out of this repository: a secret gist is readable by anyone who
-has the URL.
 
 ## Tailor a resume
 
@@ -357,41 +365,38 @@ dossier --version
 dossier paths
 ```
 
-Settings and data are managed separately:
-
-```text
-chezmoi              -> ~/.config/dossier/config.yml   (theme, provider, cache)
-secret gist          -> ~/.local/share/dossier/career.yml
-                        ~/.local/share/dossier/career.private.yml
-                        ~/.local/share/dossier/freelance.yml
-```
-
 ```bash
 chezmoi apply   # ~/.config/dossier/config.yml
-gh auth login
-
-# data files live in one secret gist
-GIST=<id>
-gh gist view $GIST -f career.yml --raw > ~/.local/share/dossier/career.yml
-gh gist view $GIST -f career.private.yml --raw > ~/.local/share/dossier/career.private.yml
-gh gist view $GIST -f freelance.yml --raw > ~/.local/share/dossier/freelance.yml
+dossier init    # creates the data files and installs the examples
 ```
 
-`config.yml` is intentionally not in the gist: chezmoi owns it, so the gist and
-chezmoi never fight over the same file. Re-add it after local edits:
+Put your data in place:
+
+```text
+~/.local/share/dossier/career.yml
+~/.local/share/dossier/career.private.yml
+~/.local/share/dossier/freelance.yml
+```
+
+Starting points live in `~/.local/share/dossier/examples/`:
+
+```text
+career.example.yml
+career.private.example.yml
+freelance.example.yml
+config.example.yml
+```
+
+Or import a JSON Resume into the fact bank:
+
+```bash
+dossier init --from ~/Documents/resume.json
+```
+
+`config.yml` is owned by chezmoi; re-add it after local edits:
 
 ```bash
 chezmoi add ~/.config/dossier/config.yml
-```
-
-Keep the gist ID out of this repository: a secret gist is readable by anyone
-who has the URL.
-
-Without a gist, rebuild from scratch:
-
-```bash
-dossier init                                  # example templates
-dossier init --from ~/Documents/resume.json   # import a JSON Resume
 ```
 
 Then fill in `freelance.yml` and run:
@@ -423,7 +428,7 @@ Secrets to recreate on a new device or repo:
 
 | Secret | Where | Used for |
 | --- | --- | --- |
-| `gh auth login` | device | gist sync, GitHub repo sync |
+| `gh auth login` | device | GitHub repo sync |
 | `opencode auth` | device | model calls |
 | `NPM_TOKEN` | dossier repo secret | `v*` tag releases |
 | `GIST_TOKEN` | json-resume repo secret | mirroring published JSON to the gist |

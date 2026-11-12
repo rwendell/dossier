@@ -110,6 +110,10 @@ export function getLastJobFile(): string {
   return join(getCacheDir(), 'last-job.json');
 }
 
+export function getExamplesDir(): string {
+  return join(dataDir, 'examples');
+}
+
 export function getPrecursorDir(): string {
   return join(getCacheDir(), 'precursors');
 }

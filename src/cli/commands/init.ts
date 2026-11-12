@@ -20,6 +20,7 @@ import {
   legacyUpworkFile,
   privateCareerFile,
 } from '../../config/paths.js';
+import { installExamples } from '../../examples.js';
 import { ensureAgents } from '../../llm/agents.js';
 
 interface InitArgs {
@@ -87,12 +88,14 @@ export const initCommand: CommandModule<object, InitArgs> = {
     mkdirSync(configDir, { recursive: true });
     loadConfig();
     ensureAgents();
+    const examplesDir = installExamples();
 
     console.log('dossier: initialized');
     console.log(`  data:     ${dataDir}`);
     console.log(`  config:   ${configDir}`);
     console.log(`  career:   ${careerFile}`);
     console.log(`  freelance: ${freelanceFile}`);
+    console.log(`  examples: ${examplesDir}`);
     console.log('');
     if (!existsSync(privateCareerFile)) {
       console.log(

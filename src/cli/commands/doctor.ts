@@ -9,6 +9,7 @@ import {
   getCacheDir,
   getCacheMode,
   getCacheSource,
+  getExamplesDir,
   getGithubCacheFile,
   getLocalProjectsCacheFile,
   privateCareerFile,
@@ -74,6 +75,8 @@ export const doctorCommand: CommandModule = {
       existsSync(`${agentsDir}/${file}`),
     );
     check('agents', agentInstalled, agentsDir, true);
+
+    check('examples', existsSync(getExamplesDir()), getExamplesDir(), false);
 
     check(
       'opencode',
