@@ -360,24 +360,34 @@ dossier --version
 dossier paths
 ```
 
-Restore the data directory (`~/.local/share/dossier`) and config
-(`~/.config/dossier/config.yml`). There are three files:
+All four data files live in one secret gist:
 
 ```text
 career.yml          # public facts: roles, achievements, projects, skills
-career.private.yml  # name, email, phone, location (optional but recommended)
+career.private.yml  # name, email, phone, location
 freelance.yml       # proposal defaults (rate, availability, profile URL)
+config.yml          # theme, provider, output and cache settings
 ```
-
-The PII overlay has built-in sync:
 
 ```bash
 gh auth login
-dossier pull-private            # secret gist containing career.private.yml
+dossier pull-private                     # resolves the gist, pulls the PII file
+CAREER_PRIVATE_GIST_ID=<id> dossier pull-private
 ```
 
-`career.yml`, `freelance.yml`, and `config.yml` are not synced automatically.
-Copy them from the old machine (`scp`, USB, or a private repo), or rebuild them:
+Pull the remaining files from the same gist:
+
+```bash
+GIST=<id>
+gh gist view $GIST -f career.yml --raw > ~/.local/share/dossier/career.yml
+gh gist view $GIST -f freelance.yml --raw > ~/.local/share/dossier/freelance.yml
+gh gist view $GIST -f config.yml --raw > ~/.config/dossier/config.yml
+```
+
+Keep the gist ID out of this repository: a secret gist is readable by anyone
+who has the URL. Set `CAREER_PRIVATE_GIST_ID` in your shell instead.
+
+Without a gist, rebuild from scratch:
 
 ```bash
 dossier init                                  # example templates
