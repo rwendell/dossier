@@ -73,11 +73,24 @@ export const scoreCommand: CommandModule<object, ScoreArgs> = {
         ('fullName' in repo && repo.fullName
           ? `github:${repo.fullName}`
           : `github:${repo.name}`);
+      const strong = entry.matchedStrong.join(', ');
+      const weak = entry.matchedWeak.join(', ');
+      const detail =
+        entry.matched.length === 0
+          ? '(no keyword matches)'
+          : [
+              strong ? `strong: ${strong}` : '',
+              weak ? `readme: ${weak}` : '',
+            ]
+              .filter(Boolean)
+              .join(' | ');
       console.log(
-        `${String(entry.score).padStart(3)}  ${evidence}  ${
-          entry.matched.length > 0 ? entry.matched.join(', ') : '(no keyword matches)'
-        }`,
+        `${String(entry.score).padStart(3)}  ${evidence}  ${detail}`,
       );
     }
+    console.log('');
+    console.log(
+      'dossier: only candidates with a structural match are used; README-only matches are listed but skipped',
+    );
   },
 };

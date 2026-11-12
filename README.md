@@ -248,15 +248,24 @@ records READMEs, manifests, languages, local commit subjects, and remote URLs.
 tooling does not rank itself as a portfolio project. Add them to
 `local.include` in `career.yml` if you want them included.
 
-Candidate ranking is keyword overlap against the job description. Metadata
-matches (name, description, topics, languages, local commits) are weighted more
-than README matches, and only projects with at least one match are selected.
-Inspect the ranking without calling a model:
+Candidate ranking is keyword overlap against the job description. Structural
+matches (name, description, topics, languages, local commits) are weighted much
+more than README matches. A project needs at least one structural match to be
+used as a candidate; README-only matches are shown by `score` but skipped,
+because prose overlap is usually incidental.
+
+`score` explains the ranking; it is retrieval, not selection. The first `--limit`
+candidates are handed to the model, which chooses the two or three that actually
+support the job's requirements. A high score alone does not mean a project is
+relevant.
 
 ```bash
 dossier score job.md
 dossier score job.md --limit 20
 ```
+
+Each line shows the total score followed by `strong:` (structural) and `readme:`
+(prose-only) matches.
 
 `proposal`, `answer`, and `tailor` automatically use cached candidates when
 present. Run a sync after adding repositories or changing READMEs.

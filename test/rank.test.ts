@@ -19,7 +19,7 @@ const job: Job = {
   title: 'TypeScript React dashboard engineer',
   company: 'Acme',
   url: '',
-  body: 'Build a TypeScript React dashboard with real-time data and SQL.',
+  body: 'Build a TypeScript React dashboard with real-time data and SQL. We serve businesses.',
   source: 'test',
   details: {},
 };
@@ -60,6 +60,16 @@ const github: GitHubData = {
       readme: 'Go command line tool.',
       included: false,
       reasons: ['no README or description'],
+    },
+    {
+      name: 'prose-only',
+      fullName: 'rwendell/prose-only',
+      source: 'github',
+      evidence: 'github:prose-only',
+      description: 'A Go CLI',
+      languages: ['Go'],
+      readme: 'This README mentions TypeScript, React, dashboard, and SQL.',
+      included: true,
     },
   ],
 };
@@ -107,5 +117,25 @@ describe('project candidate ranking', () => {
   it('returns no candidates when there is no project metadata', () => {
     const result = rankProjects(null, null, career, job);
     expect(result.selected).toEqual([]);
+  });
+
+  it('skips projects that only match README prose', () => {
+    const result = rankProjects(github, local, career, job, 12);
+    const proseOnly = result.scored.find(
+      (entry) => entry.repo.name === 'prose-only',
+    );
+    expect(proseOnly?.matchedWeak.length).toBeGreaterThan(0);
+    expect(proseOnly?.matchedStrong).toEqual([]);
+    expect(
+      result.selected.some(
+        (candidate) => candidate.evidence === 'github:prose-only',
+      ),
+    ).toBe(false);
+  });
+
+  it('strips sentence punctuation from keywords', () => {
+    const result = rankProjects(github, local, career, job, 12);
+    expect(result.tokens).toContain('businesses');
+    expect(result.tokens).not.toContain('businesses.');
   });
 });
