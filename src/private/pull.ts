@@ -5,15 +5,23 @@ import {
   readFileSync,
   writeFileSync,
 } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { basename, dirname, extname, join } from 'node:path';
 import { parse as parseYaml } from 'yaml';
 import { loadCareer } from '../career/load.js';
-import { getCacheDir, privateCareerFile } from '../config/paths.js';
+import {
+  careerFile,
+  configFile,
+  freelanceFile,
+  getCacheDir,
+  privateCareerFile,
+} from '../config/paths.js';
 
 export interface PullPrivateOptions {
   gist?: string;
   file?: string;
   allowPublic?: boolean;
+  /** Also pull the other YAML data files from the same gist. */
+  all?: boolean;
 }
 
 interface Gist {
@@ -23,34 +31,73 @@ interface Gist {
   files?: Record<string, unknown>;
 }
 
+interface DataFile {
+  name: string;
+  path: string;
+}
+
+/**
+ * Pull `career.private.yml`, or with `--all` every YAML data file the gist
+ * carries. Non-YAML gist files (notes, READMEs) are never pulled.
+ */
+export function dataFiles(): DataFile[] {
+  return [
+    { name: 'career.private.yml', path: privateCareerFile },
+    { name: 'career.yml', path: careerFile },
+    { name: 'freelance.yml', path: freelanceFile },
+    { name: 'config.yml', path: configFile },
+  ].filter((file) => extname(file.name) === '.yml');
+}
+
 export function pullPrivate(options: PullPrivateOptions = {}): void {
   const fileName = options.file || 'career.private.yml';
-  const outputPath = privateCareerFile;
-
   const gist = resolveGist({
     requested: options.gist,
     fileName,
     allowPublic: Boolean(options.allowPublic),
   });
+  const available = Object.keys(gist.files ?? {});
 
+  const content = readGistFile(gist.id, fileName);
+  validatePrivateOverlay(content, fileName);
+  writeIfChanged(fileName, privateCareerFile, content, gist);
+  reportMerge();
+
+  if (!options.all) return;
+
+  for (const file of dataFiles()) {
+    if (file.name === fileName) continue;
+    if (!available.includes(file.name)) {
+      console.log(`dossier: ${file.name} is not in the gist; skipped`);
+      continue;
+    }
+    const extra = readGistFile(gist.id, file.name);
+    validateYamlObject(extra, file.name);
+    writeIfChanged(file.name, file.path, extra, gist);
+  }
+}
+
+function readGistFile(gistId: string, fileName: string): string {
   let content: string;
   try {
     content = execFileSync(
       'gh',
-      ['gist', 'view', gist.id, '--filename', fileName, '--raw'],
+      ['gist', 'view', gistId, '--filename', fileName, '--raw'],
       { encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 },
     );
   } catch (error) {
     throw new Error(
-      formatGhError(`Could not read ${fileName} from gist ${gist.id}`, error),
+      formatGhError(`Could not read ${fileName} from gist ${gistId}`, error),
     );
   }
 
-  content = `${content
+  return `${content
     .replace(/^\uFEFF/, '')
     .replace(/\r\n/g, '\n')
     .trimEnd()}\n`;
+}
 
+function validatePrivateOverlay(content: string, fileName: string): void {
   const parsed = parseYaml(content) as unknown;
   if (!isPlainObject(parsed)) {
     throw new Error(`${fileName} is not a YAML object.`);
@@ -68,16 +115,28 @@ export function pullPrivate(options: PullPrivateOptions = {}): void {
       `${fileName} does not look like the private PII overlay.`,
     );
   }
+}
 
+function validateYamlObject(content: string, fileName: string): void {
+  const parsed = parseYaml(content) as unknown;
+  if (!isPlainObject(parsed)) {
+    throw new Error(`${fileName} is not a YAML object.`);
+  }
+}
+
+function writeIfChanged(
+  fileName: string,
+  outputPath: string,
+  content: string,
+  gist: Gist,
+): void {
+  const source = gist.public ? 'public' : 'secret';
   const existing = existsSync(outputPath)
     ? readFileSync(outputPath, 'utf8')
     : null;
 
   if (existing === content) {
-    console.log(
-      `dossier: pull-private already up to date (${gist.public ? 'public' : 'secret'} gist)`,
-    );
-    reportMerge();
+    console.log(`dossier: ${fileName} already up to date (${source} gist)`);
     return;
   }
 
@@ -85,17 +144,15 @@ export function pullPrivate(options: PullPrivateOptions = {}): void {
     const backupDir = join(getCacheDir(), 'pull-private');
     mkdirSync(backupDir, { recursive: true });
     const stamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const backupPath = join(backupDir, `career.private-${stamp}.yml`);
+    const stem = basename(fileName, extname(fileName));
+    const backupPath = join(backupDir, `${stem}-${stamp}.yml`);
     writeFileSync(backupPath, existing);
-    console.log(`dossier: backed up the previous file to ${backupPath}`);
+    console.log(`dossier: backed up the previous ${fileName} to ${backupPath}`);
   }
 
   mkdirSync(dirname(outputPath), { recursive: true });
   writeFileSync(outputPath, content);
-  console.log(
-    `dossier: wrote ${outputPath} (${gist.public ? 'public' : 'secret'} gist)`,
-  );
-  reportMerge();
+  console.log(`dossier: wrote ${outputPath} (${source} gist)`);
 }
 
 export function parseGistId(value: string): string {
@@ -116,7 +173,7 @@ function resolveGist({
   requested?: string;
   fileName: string;
   allowPublic: boolean;
-}): { id: string; public: boolean } {
+}): Gist {
   if (requested) {
     return loadGist(parseGistId(requested), fileName, allowPublic);
   }
@@ -159,7 +216,7 @@ function loadGist(
   id: string,
   fileName: string,
   allowPublic: boolean,
-): { id: string; public: boolean } {
+): Gist {
   const gist = fetchGist(id);
   if (gist.public && !allowPublic) {
     throw new Error(
@@ -172,7 +229,7 @@ function loadGist(
       `Gist ${id} does not contain ${fileName}. Available file(s): ${available.join(', ') || '(none)'}.`,
     );
   }
-  return { id, public: gist.public === true };
+  return gist;
 }
 
 function listGists(): Gist[] {

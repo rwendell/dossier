@@ -371,18 +371,22 @@ config.yml          # theme, provider, output and cache settings
 
 ```bash
 gh auth login
-dossier pull-private                     # resolves the gist, pulls the PII file
-CAREER_PRIVATE_GIST_ID=<id> dossier pull-private
+CAREER_PRIVATE_GIST_ID=<id> dossier pull-private --all
 ```
 
-Pull the remaining files from the same gist:
+`pull-private` resolves the secret gist (`--gist`, the env var, or discovery by
+`career.private.yml`) and restores every YAML data file it contains:
 
-```bash
-GIST=<id>
-gh gist view $GIST -f career.yml --raw > ~/.local/share/dossier/career.yml
-gh gist view $GIST -f freelance.yml --raw > ~/.local/share/dossier/freelance.yml
-gh gist view $GIST -f config.yml --raw > ~/.config/dossier/config.yml
+```text
+career.private.yml -> ~/.local/share/dossier/
+career.yml         -> ~/.local/share/dossier/
+freelance.yml      -> ~/.local/share/dossier/
+config.yml         -> ~/.config/dossier/
 ```
+
+Only `.yml` files are pulled; notes or READMEs in the gist are ignored. Without
+`--all` it pulls just the PII overlay. Changed local files are backed up under
+`<cache>/pull-private/` before being replaced.
 
 Keep the gist ID out of this repository: a secret gist is readable by anyone
 who has the URL. Set `CAREER_PRIVATE_GIST_ID` in your shell instead.

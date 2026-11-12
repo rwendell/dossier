@@ -6,11 +6,12 @@ interface PullPrivateArgs {
   gist?: string;
   file?: string;
   allowPublic?: boolean;
+  all?: boolean;
 }
 
 export const pullPrivateCommand: CommandModule<object, PullPrivateArgs> = {
   command: 'pull-private',
-  describe: 'Pull career.private.yml from a secret GitHub gist',
+  describe: 'Pull dossier YAML data from a secret GitHub gist',
   builder: (yargs) =>
     yargs
       .option('gist', {
@@ -26,6 +27,12 @@ export const pullPrivateCommand: CommandModule<object, PullPrivateArgs> = {
         type: 'boolean',
         describe: 'Permit a public gist; not recommended for PII',
         default: false,
+      })
+      .option('all', {
+        type: 'boolean',
+        describe:
+          'Also pull career.yml, freelance.yml, and config.yml from the same gist',
+        default: false,
       }),
   handler: (argv) => {
     loadConfig();
@@ -33,6 +40,7 @@ export const pullPrivateCommand: CommandModule<object, PullPrivateArgs> = {
       gist: argv.gist,
       file: argv.file,
       allowPublic: argv.allowPublic,
+      all: argv.all,
     });
   },
 };
