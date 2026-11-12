@@ -49,6 +49,7 @@ Requirements:
   fonts/                       # fallback serif, downloaded on demand
   logs/                        # diagnostics, see below
   tailor/<slug>/               # scratch HTML used for PDF measurement
+  precursors/resume-*.json     # JSON Resume each PDF was rendered from
   traces/resume-*.trace.json   # evidence trace for each tailored resume
 ```
 
@@ -188,7 +189,7 @@ dossier tailor 'https://www.upwork.com/jobs/...'
 dossier tailor job.md --out ~/Documents/resumes
 dossier tailor --generic
 dossier tailor                 # no job source -> generic resume
-dossier tailor job.md --no-render   # JSON only, skip the PDF
+dossier tailor job.md --no-render   # skip the PDF; write the JSON to the cache
 ```
 
 The PDF is rendered with `resumed` and the configured theme. It is measured in
@@ -227,16 +228,22 @@ Installing a real serif font is preferable and keeps the theme's intended look:
 sudo apt install fonts-liberation   # Debian/Ubuntu/WSL
 ```
 
-Outputs default to the current directory:
+The PDF is the deliverable:
 
 ```text
-./resume-<slug>.json
 ./resume-<slug>.pdf
 ```
 
-The evidence trace is provenance, not a deliverable, so it is kept in the cache
-as `<cache>/traces/resume-<slug>.trace.json`. `dossier verify` finds it there by
-resume filename.
+The JSON Resume and its evidence trace are precursors, not deliverables, so they
+are kept in the cache:
+
+```text
+<cache>/precursors/resume-<slug>.json
+<cache>/traces/resume-<slug>.trace.json
+```
+
+`dossier verify` and the proposal/answer reuse logic find both by resume
+filename. `dossier clean` removes them with the rest of the cache.
 
 ## Sync project metadata
 
@@ -309,8 +316,8 @@ Outputs default to the current directory:
 Use `--out ~/Documents/proposals` to write elsewhere and `--name` to keep
 variants.
 
-If a tailored `resume-<slug>.json` (and its cached trace) exists, `proposal` and
-`answer` use it as the primary framing automatically.
+If a tailored resume for the same slug exists in the precursor cache (with its
+trace), `proposal` and `answer` use it as the primary framing automatically.
 
 Public Upwork `/jobs/...` URLs use the headless Chrome fallback. Saved-jobs
 modal URLs (`/nx/search/jobs/saved/details/...`) and search URLs need your

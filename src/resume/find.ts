@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { tracePathFor } from '../config/paths.js';
+import { getPrecursorDir, tracePathFor } from '../config/paths.js';
 import type { Resume, Trace } from './types.js';
 
 export interface FoundTailoredResume {
@@ -20,6 +20,7 @@ export function findTailoredResume(
   cwd = process.cwd(),
 ): FoundTailoredResume | null {
   const candidates = [
+    join(getPrecursorDir(), `resume-${slug}.json`),
     join(outDir, `resume-${slug}.json`),
     join(cwd, `resume-${slug}.json`),
   ];

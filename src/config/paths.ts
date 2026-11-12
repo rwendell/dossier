@@ -106,6 +106,16 @@ export function getTraceDir(): string {
   return join(getCacheDir(), 'traces');
 }
 
+export function getPrecursorDir(): string {
+  return join(getCacheDir(), 'precursors');
+}
+
+/** The JSON Resume that a tailored PDF was rendered from. */
+export function precursorPathFor(name: string): string {
+  const file = basename(String(name ?? '')).replace(/\.(json|pdf)$/i, '');
+  return join(getPrecursorDir(), `${file}.json`);
+}
+
 /**
  * Provenance traces are keyed by the resume filename and kept in the cache, so
  * they follow the resume around without landing in the user's directory.

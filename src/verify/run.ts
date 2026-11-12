@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { loadCareer } from '../career/load.js';
 import { loadConfig } from '../config/config.js';
-import { resolveOutputDir } from '../config/paths.js';
+import { precursorPathFor, resolveOutputDir } from '../config/paths.js';
 import { loadAllCandidates } from '../projects/store.js';
 import { locateTrace } from '../resume/find.js';
 import { getPdfPageCount } from '../resume/render.js';
@@ -78,7 +78,10 @@ function resolveResumeFiles(
   const direct = resolve(process.cwd(), input);
   if (existsSync(direct)) {
     if (direct.toLowerCase().endsWith('.pdf')) {
-      const resumePath = direct.replace(/\.pdf$/i, '.json');
+      const sibling = direct.replace(/\.pdf$/i, '.json');
+      const resumePath = existsSync(sibling)
+        ? sibling
+        : precursorPathFor(direct);
       return {
         resumePath,
         tracePath: locateTrace(resumePath),
@@ -86,8 +89,11 @@ function resolveResumeFiles(
       };
     }
     if (direct.toLowerCase().endsWith('.trace.json')) {
+      const sibling = direct.replace(/\.trace\.json$/i, '.json');
       return {
-        resumePath: direct.replace(/\.trace\.json$/i, '.json'),
+        resumePath: existsSync(sibling)
+          ? sibling
+          : precursorPathFor(direct),
         tracePath: direct,
         pdfPath: direct.replace(/\.trace\.json$/i, '.pdf'),
       };
@@ -108,6 +114,7 @@ function resolveResumeFiles(
 
   const slug = slugify(input.replace(/\.(json|pdf)$/i, ''));
   const candidates = [
+    precursorPathFor(`resume-${slug}`),
     resolve(process.cwd(), `resume-${slug}.json`),
     resolve(outputDir, `resume-${slug}.json`),
     resolve(process.cwd(), input.endsWith('.json') ? input : `${input}.json`),

@@ -11,7 +11,9 @@ import {
   displayPath,
   getCacheDir,
   getRuntimeDir,
+  getPrecursorDir,
   getTraceDir,
+  precursorPathFor,
   resolveOutputDir,
   tracePathFor,
 } from '../config/paths.js';
@@ -169,10 +171,11 @@ export async function runTailor(options: TailorRunOptions): Promise<void> {
     outDir,
     `resume-${slug}${nameSlug ? `.${nameSlug}` : ''}`,
   );
-  const resumePath = `${base}.json`;
-  const tracePath = tracePathFor(resumePath);
-  mkdirSync(getTraceDir(), { recursive: true });
   const pdfPath = `${base}.pdf`;
+  const resumePath = precursorPathFor(pdfPath);
+  const tracePath = tracePathFor(resumePath);
+  mkdirSync(getPrecursorDir(), { recursive: true });
+  mkdirSync(getTraceDir(), { recursive: true });
   const workDir = resolve(getCacheDir(), 'tailor', slug);
   mkdirSync(workDir, { recursive: true });
   const htmlPath = resolve(workDir, 'measure.html');
@@ -331,7 +334,7 @@ export async function runTailor(options: TailorRunOptions): Promise<void> {
     console.warn(`dossier: warning: ${warning}`);
   }
 
-  console.log(`dossier: saved ${displayPath(resumePath)}`);
+  console.log(`dossier: resume ${resumePath}`);
   console.log(`dossier: trace ${tracePath}`);
   if (!options.noRender) {
     console.log(`dossier: saved ${displayPath(pdfPath)}`);

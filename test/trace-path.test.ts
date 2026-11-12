@@ -1,7 +1,12 @@
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { getTraceDir, tracePathFor } from '../src/config/paths.js';
+import {
+  getPrecursorDir,
+  getTraceDir,
+  precursorPathFor,
+  tracePathFor,
+} from '../src/config/paths.js';
 import { locateTrace } from '../src/resume/find.js';
 
 describe('trace location', () => {
@@ -9,6 +14,12 @@ describe('trace location', () => {
 
   afterEach(() => {
     for (const path of written.splice(0)) rmSync(path, { force: true });
+  });
+
+  it('keys the JSON resume by name in the precursor cache', () => {
+    expect(precursorPathFor('/home/someone/apps/resume-acme.pdf')).toBe(
+      join(getPrecursorDir(), 'resume-acme.json'),
+    );
   });
 
   it('keys traces by resume filename in the cache', () => {
