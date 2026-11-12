@@ -307,7 +307,8 @@ dossier answer job.md -q question.txt --hint 'Emphasize the Kafka work'
 ```
 
 With no job argument, `answer` reuses the most recent job from `dossier tailor`
-or `dossier proposal` (`<cache>/last-job.json`). With one positional and no
+or `dossier proposal` (`<cache>/last-job.json`). If that file is missing, it
+reconstructs the job from the newest tailored resume in the precursor cache. With one positional and no
 `-q`, the positional is treated as the question. A positional that is a URL or
 an existing file is treated as the job source, so a question is required then.
 
