@@ -14,7 +14,6 @@ import {
   getRuntimeDir,
   freelanceFile,
   resolveOutputDir,
-  stateDir,
 } from '../../config/paths.js';
 
 interface PathsArgs {
@@ -46,7 +45,6 @@ export const pathsCommand: CommandModule<object, PathsArgs> = {
       config: configDir,
       configFile,
       cache: getCacheDir(),
-      state: stateDir,
       logs: getLogDir(),
       fonts: getFontDir(),
       runtime: getRuntimeDir(),

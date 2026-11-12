@@ -47,19 +47,24 @@ Requirements:
   github.json                  # synced GitHub/org repos
   local-projects.json          # scanned ~/projects
   fonts/                       # fallback serif, downloaded on demand
-
-~/.local/state/dossier/logs/
-  *.prompt.txt                 # --debug prompts
-  *.opencode-output.jsonl      # raw model output on failures or --debug
+  logs/                        # diagnostics, see below
+  tailor/<slug>/               # scratch HTML used for PDF measurement
 ```
 
 Dossier agents are project-local to its runtime directory. OpenCode is invoked
 with that directory as its working directory, so `dossier-*` agents do not
 appear in your global OpenCode TUI.
 
-Diagnostics never land in the output directory. Raw model output and debug
-prompts go to the XDG state directory above (`DOSSIER_STATE_HOME` overrides it),
-and the error message prints the exact path.
+Intermediate files never land in the output directory:
+
+```text
+<cache>/logs/*.prompt.txt           # --debug prompts
+<cache>/logs/*.opencode-output.jsonl # raw model output on failures or --debug
+<cache>/tailor/<slug>/measure.html  # layout measurement scratch file
+```
+
+They follow the cache location and are removed by `dossier clean`. The error
+message prints the exact path.
 
 Cache location is mode-aware:
 

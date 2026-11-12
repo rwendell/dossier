@@ -82,9 +82,6 @@ export const dataDir = process.env.DOSSIER_DATA_HOME
 export const configDir = process.env.DOSSIER_CONFIG_HOME
   ? resolve(process.env.DOSSIER_CONFIG_HOME)
   : defaults.config;
-export const stateDir = process.env.DOSSIER_STATE_HOME
-  ? resolve(process.env.DOSSIER_STATE_HOME)
-  : defaults.log;
 
 export const careerFile = join(dataDir, 'career.yml');
 export const privateCareerFile = join(dataDir, 'career.private.yml');
@@ -102,7 +99,7 @@ export function getAgentsDir(): string {
 }
 
 export function getLogDir(): string {
-  return join(stateDir, 'logs');
+  return join(getCacheDir(), 'logs');
 }
 
 export function getProfileCacheDir(): string {
@@ -118,7 +115,7 @@ export function getLocalProjectsCacheFile(): string {
 }
 
 export function ensureBaseDirs(): void {
-  for (const dir of [dataDir, configDir, getCacheDir(), stateDir]) {
+  for (const dir of [dataDir, configDir, getCacheDir()]) {
     mkdirSync(dir, { recursive: true });
   }
 }
